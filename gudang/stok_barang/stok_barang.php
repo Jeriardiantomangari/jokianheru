@@ -22,7 +22,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'gudang'){
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
 <style>
-/* AREA KONTEN UTAMA */
 .konten-utama { 
   margin-left:250px; 
   margin-top:60px; 
@@ -39,7 +38,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'gudang'){
   letter-spacing:.5px;
 }
 
-/* TOMBOL-TOMBOL */
 .tombol { 
   border:none; 
   border-radius:6px; 
@@ -52,23 +50,19 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'gudang'){
   gap:4px;
 }
 
-.tombol i {
-  font-size:12px;
-}
+.tombol i { font-size:12px; }
 
 .tombol:hover { 
   transform: translateY(-1px);
   box-shadow:0 2px 6px rgba(0,0,0,0.18);
 }
 
-/* Cetak = hijau warm */
 .tombol-cetak { 
   background:#43a047; 
   margin-right:10px; 
   padding:8px 15px; 
 }
 
-/* Tabel Barang */
 .tabel-barang { 
   width:100%; 
   border-collapse:collapse; 
@@ -79,7 +73,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'gudang'){
   table-layout:fixed; 
 }
 
-/* DataTables controls */
 .dataTables_wrapper .dataTables_filter input,
 .dataTables_wrapper .dataTables_length select { 
   padding:6px 10px; 
@@ -120,6 +113,24 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'gudang'){
   background:#fffdf7;
 }
 
+.tr-merah  { background:#ffebee !important; }
+.tr-merah, .tr-merah td, .tr-merah th, .tr-merah a, .tr-merah span, .tr-merah strong {
+  color:#b71c1c !important;
+  font-weight:700;
+}
+
+.tr-kuning { background:#fff8e1 !important; }
+.tr-kuning, .tr-kuning td, .tr-kuning th, .tr-kuning a, .tr-kuning span, .tr-kuning strong {
+  color:#8d6e00 !important;
+  font-weight:700;
+}
+
+.tr-hijau  { background:#e8f5e9 !important; }
+.tr-hijau, .tr-hijau td, .tr-hijau th, .tr-hijau a, .tr-hijau span, .tr-hijau strong {
+  color:#1b5e20 !important;
+  font-weight:700;
+}
+
 /* Responsif */
 @media screen and (max-width: 768px) {
   .konten-utama {
@@ -130,27 +141,15 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'gudang'){
     text-align: center;
   }
 
-  .konten-utama h2 {
-    text-align: center;
-  }
+  .konten-utama h2 { text-align:center; }
 
   .konten-utama .tombol-cetak {
-    display: inline-block;
-    margin: 5px auto;
+    display:inline-block;
+    margin:5px auto;
   }
 
-  .tabel-barang,
-  thead,
-  tbody,
-  th,
-  td,
-  tr {
-    display: block;
-  }
-
-  thead tr {
-    display: none;
-  }
+  .tabel-barang, thead, tbody, th, td, tr { display:block; }
+  thead tr { display:none; }
 
   tr {
     margin-bottom: 15px;
@@ -161,20 +160,20 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'gudang'){
   }
 
   td {
-    text-align: right;
-    padding-left: 50%;
-    position: relative;
+    text-align:right;
+    padding-left:50%;
+    position:relative;
     border-right:none;
     border-bottom:1px solid #ffe0b2;
   }
 
   td::before {
     content: attr(data-label);
-    position: absolute;
-    left: 15px;
-    width: 45%;
-    font-weight: 600;
-    text-align: left;
+    position:absolute;
+    left:15px;
+    width:45%;
+    font-weight:600;
+    text-align:left;
     color:#b71c1c;
   }
 }
@@ -183,7 +182,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'gudang'){
 <div class="konten-utama">
   <h2>Laporan Stok Barang</h2>
 
-  <!-- Hanya tombol Cetak -->
   <button class="tombol tombol-cetak"><i class="fa-solid fa-print"></i> Cetak</button>
 
   <table id="tabel-barang" class="tabel-barang">
@@ -191,24 +189,60 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'gudang'){
       <tr>
         <th>No.</th>
         <th>Nama Barang</th>
-        <th>Jenis</th>
-        <th>Harga</th>
+        <th>Kategori</th>
         <th>Jumlah Stok</th>
+        <th>Status Stok</th>
       </tr>
     </thead>
     <tbody>
       <?php
-      $no=1;
-      // tabel: barang (id, nama_barang, jenis, harga, stok)
-      $query = mysqli_query($conn,"SELECT * FROM barang ORDER BY id ASC");
-      while($row=mysqli_fetch_assoc($query)) {
+      $no = 1;
+
+      // JOIN stok_gudang dengan barang untuk ambil minimal_stok_gudang
+      $query = mysqli_query($conn, "
+        SELECT 
+          sg.Id_stok_gudang,
+          sg.Id_barang,
+          sg.Nama_barang,
+          sg.Kategori,
+          sg.Jumlah_stok,
+          b.minimal_stok_gudang,
+          COALESCE(k.nama_kategori, sg.Kategori) AS nama_kategori
+        FROM stok_gudang sg
+        JOIN barang b ON b.id_barang = sg.Id_barang
+        LEFT JOIN kategori k ON k.id_kategori = sg.Kategori
+        ORDER BY sg.Id_stok_gudang ASC
+      ");
+
+      if(!$query){
+        die("Query gagal: " . mysqli_error($conn));
+      }
+
+      while($row = mysqli_fetch_assoc($query)) {
+        $stok = (int)$row['Jumlah_stok'];
+        $min  = (int)$row['minimal_stok_gudang'];
+
+        // 3 kondisi:
+        // Kurang  : stok < min          => merah
+        // Medium  : stok >= min & <2min => kuning
+        // Banyak  : stok >= 2min        => hijau
+        if ($stok < $min) {
+          $kelas = 'tr-merah';
+          $peringatan = 'Kurang';
+        } elseif ($stok >= 2 * $min) {
+          $kelas = 'tr-hijau';
+          $peringatan = 'Banyak';
+        } else {
+          $kelas = 'tr-kuning';
+          $peringatan = 'Sedang';
+        }
       ?>
-      <tr>
+      <tr class="<?= $kelas; ?>">
         <td data-label="No"><?= $no++; ?></td>
-        <td data-label="Nama Barang"><?= htmlspecialchars($row['nama_barang']); ?></td>
-        <td data-label="Jenis"><?= htmlspecialchars($row['jenis']); ?></td>
-        <td data-label="Harga">Rp <?= number_format($row['harga'],2,',','.'); ?></td>
-        <td data-label="Jumlah Stok"><?= (int)$row['stok']; ?></td>
+        <td data-label="Nama Barang"><?= htmlspecialchars($row['Nama_barang']); ?></td>
+        <td data-label="Kategori"><?= htmlspecialchars($row['nama_kategori']); ?></td>
+        <td data-label="Jumlah Stok"><?= $stok; ?></td>
+        <td data-label="Peringatan"><?= $peringatan; ?></td>
       </tr>
       <?php } ?>
     </tbody>
@@ -245,32 +279,32 @@ $(document).ready(function () {
 $('.tombol-cetak').click(function(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+
   doc.setFontSize(14);
   doc.text("Laporan Stok Barang", 105, 15, {align:"center"});
 
   let headers = [];
-  // sekarang semua kolom dipakai (tidak ada Aksi)
-  $('#tabel-barang thead th').each(function(index){ 
+  $('#tabel-barang thead th').each(function(){ 
     headers.push($(this).text()); 
   });
 
   let data = [];
   $('#tabel-barang tbody tr').each(function(){
-    let rowData=[];
-    $(this).find('td').each(function(index){ 
+    let rowData = [];
+    $(this).find('td').each(function(){ 
       rowData.push($(this).text()); 
     });
     data.push(rowData);
   });
 
   doc.autoTable({
-    head:[headers], 
-    body:data, 
-    startY:20, 
-    theme:'grid', 
-    headStyles:{fillColor:[211,47,47], textColor:255}, 
-    styles:{fontSize:10}, 
-    margin:{top:20} 
+    head:[headers],
+    body:data,
+    startY:20,
+    theme:'grid',
+    headStyles:{fillColor:[211,47,47], textColor:255},
+    styles:{fontSize:10},
+    margin:{top:20}
   });
 
   doc.save('Laporan_Stok_Barang.pdf');

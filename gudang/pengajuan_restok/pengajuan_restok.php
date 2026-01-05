@@ -1,14 +1,14 @@
 <?php 
-session_start();
+session_start(); 
 include '../../koneksi/sidebargudang.php'; 
 include '../../koneksi/koneksi.php'; 
 
-// Cek role (opsional kalau login sudah jalan)
-if (!isset($_SESSION['role']) || $_SESSION['role'] != 'gudang') {
-    // header("Location: ../../index.php");
-    // exit;
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'gudang') {
+    echo "Akses ditolak";
+    exit;
 }
 ?>
+
 <!-- CDN jQuery dan DataTables -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -18,14 +18,14 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] != 'gudang') {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-body {
+  body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: radial-gradient(circle at top left, #fff7e0 0%, #ffe3b3 40%, #ffffff 100%);
 }
 
 .konten-utama { 
-  margin-left:250px;   /* sesuaikan jika tidak pakai sidebar */
+  margin-left:250px;  
   margin-top:60px; 
   padding:30px; 
   min-height:calc(100vh - 60px); 
@@ -38,7 +38,6 @@ body {
   letter-spacing:.5px;
 }
 
-/* TOMBOL */
 .tombol { 
   border:none; 
   border-radius:6px; 
@@ -66,7 +65,6 @@ body {
   margin-bottom:15px;
 }
 
-/* Tombol di kolom Aksi */
 .tombol-edit {
   background:#fb8c00;
   padding:5px 10px;
@@ -88,6 +86,8 @@ body {
   color:#fff;
 }
 
+
+
 .tombol-belum {
   background:#757575;
   padding:5px 10px;
@@ -108,7 +108,6 @@ body {
   color:#fff;
 }
 
-/* DataTables controls */
 .dataTables_wrapper .dataTables_filter input,
 .dataTables_wrapper .dataTables_length select { 
   padding:6px 10px; 
@@ -125,7 +124,6 @@ body {
   box-shadow:0 0 0 2px rgba(251,140,0,0.15);
 }
 
-/* TABEL */
 .tabel-ajukan { 
   width:100%; 
   border-collapse:collapse; 
@@ -160,31 +158,31 @@ body {
   background:#fffdf7;
 }
 
-/* Modal */
-.kotak-modal { 
-  display:none; 
-  position:fixed; 
-  z-index:300; 
-  left:0; 
-  top:0; 
-  width:100%; 
-  height:100vh; 
-  background:rgba(0,0,0,0.55); 
-  justify-content:center; 
-  align-items:center; 
+.kotak-modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0,0,0,0.55);
+  justify-content: center;
+  align-items: center;
 }
 
-.isi-modal { 
-  background:white; 
-  padding:25px; 
-  border-radius:12px; 
-  width:400px; 
-  max-width:90%; 
-  box-shadow:0 6px 18px rgba(0,0,0,.35); 
-  text-align:center; 
-  position:relative; 
-  border-top:4px solid #d32f2f;
+.isi-modal {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 6px 18px rgba(0,0,0,.35);
+  text-align: center;
+  position: relative;
+  border-top: 4px solid #d32f2f;
 }
+
 
 .isi-modal h3 { 
   margin-bottom:16px; 
@@ -238,7 +236,7 @@ body {
 .tutup-modal:hover { 
   color:#d32f2f; 
 }
-/* Responsif */
+
 @media screen and (max-width: 768px) {
   .konten-utama {
     margin-left: 0;
@@ -297,12 +295,22 @@ body {
     color:#b71c1c;
   }
 
-  .tombol-edit,
-  .tombol-hapus {
-    width: auto;
-    padding: 6px 10px;
-    display: inline-flex;
-    margin: 3px 2px;
+
+   .tombol-edit,
+  .tombol-hapus, {
+  width: auto;
+  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;   
+  margin: 3px 2px;
+  line-height: 1;
+  gap:4px;
+  }
+
+  .tombol-edit i,
+  .tombol-hapus i, {
+  line-height:1;
+  display:inline-block;
   }
 }
 </style>
@@ -310,64 +318,71 @@ body {
 <div class="konten-utama">
   <h2>Pengajuan Restok Barang</h2>
 
-  <button class="tombol tombol-tambah" onclick="bukaModalAjukan()">
+  <button class="tombol tombol-tambah" id="btn-ajukan" onclick="bukaModalAjukan()">
     <i class="fa-solid fa-boxes-stacked"></i> Ajukan Restok
   </button>
 
   <table id="tabel-ajukan" class="tabel-ajukan">
     <thead>
-      <tr>
-        <th>No.</th>
-        <th>Tanggal Pengajuan</th>
-        <th>Nama Barang</th>
-        <th>Harga</th>
-        <th>Jumlah Restok</th>
-        <th>Total Harga</th>
-        <th>Status Restok</th>
-        <th>Aksi</th>
-      </tr>
+     <tr>
+  <th>No.</th>
+  <th>Nama Barang</th>
+  <th>Harga</th>
+  <th>Jumlah Restok</th>
+  <th>Barang Masuk</th>
+  <th>Total Harga</th>
+  <th>Status Restok</th>
+  <th>Aksi</th>
+</tr>
+
     </thead>
     <tbody>
       <?php
-      $no=1;
-      $qAjukan = mysqli_query($conn,"SELECT * FROM ajukan_stok ORDER BY id DESC");
-      while($a = mysqli_fetch_assoc($qAjukan)) {
+        $no = 1;
+        $qAjukan = mysqli_query($conn, "
+  SELECT 
+    r.*,
+    COALESCE(SUM(bm.Barang_masuk), 0) AS barang_masuk
+  FROM restok_barang r
+  LEFT JOIN barang_masuk bm ON bm.Id_restok_barang = r.Id_restok_barang
+  GROUP BY r.Id_restok_barang
+  ORDER BY r.Id_restok_barang DESC
+");
 
-        $tgl = '-';
-        if (!empty($a['created_at'])) {
-          $tgl = date('d-m-Y H:i', strtotime($a['created_at']));
-        }
+        while ($a = mysqli_fetch_assoc($qAjukan)) {
       ?>
       <tr>
-        <td><?= $no++; ?></td>
-        <td><?= $tgl; ?></td>
-        <td><?= htmlspecialchars($a['nama_barang']); ?></td>
-        <td>Rp <?= number_format($a['harga'],2,',','.'); ?></td>
-        <td><?= (int)$a['jumlah_restok']; ?></td>
-        <td>Rp <?= number_format($a['total_harga'],2,',','.'); ?></td>
-        <td><?= htmlspecialchars($a['status']); ?></td>
-        <td>
-          <?php if ($a['status'] === 'Menunggu' || $a['status'] === 'Ditolak'): ?>
-            <!-- Gudang boleh EDIT & HAPUS -->
-            <button class="tombol-edit" onclick="editAjukan(<?= $a['id']; ?>)">
+        <td data-label="No"><?= $no++; ?></td>
+<td data-label="Nama Barang"><?= htmlspecialchars($a['Nama_barang']); ?></td>
+<td data-label="Harga">Rp <?= number_format($a['Harga'], 2, ',', '.'); ?></td>
+<td data-label="Jumlah_Restok"><?= (int)$a['Jumlah_restok']; ?></td>
+<td data-label="Barang Masuk">
+  <?php
+    $bm = isset($a['barang_masuk']) ? (int)$a['barang_masuk'] : 0;
+    echo ($bm > 0) ? $bm : '-';
+  ?>
+</td>
+<td data-label="Total_harga">Rp <?= number_format($a['Total_harga'], 2, ',', '.'); ?></td>
+<td data-label="Status"><?= htmlspecialchars($a['Status']); ?></td>
+<td data-label="Aksi">
+
+          <?php if ($a['Status'] === 'Menunggu' || $a['Status'] === 'Ditolak'): ?>
+            <button class="tombol-edit" onclick="editAjukan(<?= $a['Id_restok_barang']; ?>)">
               <i class="fa-solid fa-pen-to-square"></i> Edit
             </button>
-            <button class="tombol-hapus" onclick="hapusAjukan(<?= $a['id']; ?>)">
+            <button class="tombol-hapus" onclick="hapusAjukan(<?= $a['Id_restok_barang']; ?>)">
               <i class="fa-solid fa-trash"></i> Hapus
             </button>
+         <?php elseif ($a['Status'] === 'Disetujui'): ?>
+  <button class="tombol-selesai" onclick="bukaModalKonfirmasi(<?= $a['Id_restok_barang']; ?>)">
+    <i class="fa-solid fa-circle-check"></i> Konfirmasi
+  </button>
 
-          <?php elseif ($a['status'] === 'Disetujui'): ?>
-            <!-- Owner sudah setuju: tombol Belum + Selesai -->
-            <button class="tombol-selesai" onclick="selesaiRestok(<?= $a['id']; ?>)">
-              <i class="fa-solid fa-check"></i> Selesai
             </button>
-
-          <?php elseif ($a['status'] === 'Selesai'): ?>
-            <!-- STATUS SELESAI: sekarang bisa dihapus -->
-            <button class="tombol-hapus" onclick="hapusAjukan(<?= $a['id']; ?>)">
+          <?php elseif ($a['Status'] === 'Selesai'): ?>
+            <button class="tombol-hapus" onclick="hapusAjukan(<?= $a['Id_restok_barang']; ?>)">
               <i class="fa-solid fa-trash"></i> Hapus
             </button>
-
           <?php else: ?>
             -
           <?php endif; ?>
@@ -384,21 +399,17 @@ body {
     <span class="tutup-modal" onclick="tutupModalAjukan()">&times;</span>
     <h3 id="judulModal">Ajukan Restok Barang</h3>
     <form id="formAjukan">
-      <!-- ID pengajuan untuk EDIT -->
       <input type="hidden" name="id" id="id_ajukan">
-
       <label>Pilih Barang</label>
       <select name="id_barang" id="id_barang" required>
         <option value="">-- Pilih Barang --</option>
         <?php
-        $qBarang = mysqli_query($conn,"SELECT id, nama_barang, harga FROM barang ORDER BY nama_barang ASC");
+        $qBarang = mysqli_query($conn, "SELECT id_barang, nama_barang, harga FROM barang ORDER BY nama_barang ASC");
         while($b = mysqli_fetch_assoc($qBarang)) {
-          echo '<option value="'.$b['id'].'" data-harga="'.$b['harga'].'">'.$b['nama_barang'].'</option>';
+          echo '<option value="'.$b['id_barang'].'" data-harga="'.$b['harga'].'">'.$b['nama_barang'].'</option>';
         }
         ?>
       </select>
-
-      <input type="text" id="nama_barang" name="nama_barang" placeholder="Nama Barang" readonly>
       <input type="number" id="harga" name="harga" placeholder="Harga" readonly>
       <input type="number" min="1" id="jumlah_restok" name="jumlah_restok" placeholder="Jumlah restok" required>
       <input type="number" id="total_harga" name="total_harga" placeholder="Total harga" readonly>
@@ -408,17 +419,99 @@ body {
   </div>
 </div>
 
+
+<!-- Modal Konfirmasi Barang Masuk -->
+<div id="modalKonfirmasi" class="kotak-modal">
+  <div class="isi-modal">
+    <span class="tutup-modal" onclick="tutupModalKonfirmasi()">&times;</span>
+    <h3>Konfirmasi Barang Masuk</h3>
+
+    <form id="formKonfirmasi">
+      <input type="hidden" id="id_konfirmasi" name="id">
+
+      <label>Nama Barang</label>
+      <input type="text" id="nama_barang_konfirmasi" readonly>
+
+      <label>Jumlah Restok (Disetujui)</label>
+      <input type="number" id="jumlah_restok_konfirmasi" readonly>
+
+      <label>Barang Masuk</label>
+      <input type="number" min="1" id="barang_masuk" name="barang_masuk" placeholder="Masukkan jumlah barang masuk" required>
+
+      <button type="submit">Simpan Konfirmasi</button>
+    </form>
+  </div>
+</div>
+
 <script>
-// DataTables
-$(document).ready(function () {
-  $('#tabel-ajukan').DataTable({
-    "pageLength": 10,
-    "lengthMenu": [5, 10, 25, 50],
-    "columnDefs": [{
-      "orderable": false, "targets": 7   // kolom Aksi
-    }],
-    "language": {
-      "emptyTable": "Belum ada pengajuan restok",
+
+  function bukaModalKonfirmasi(id) {
+  // ambil data pengajuan yang statusnya Disetujui
+  $.post('proses_ajukan_restok.php', {aksi: 'ambil_konfirmasi', id: id}, function(res){
+    let obj;
+    try {
+      obj = JSON.parse(res);
+    } catch(e) {
+      alert(res);
+      return;
+    }
+
+    if (obj.error) {
+      alert(obj.error);
+      return;
+    }
+
+    $('#id_konfirmasi').val(obj.id);
+    $('#nama_barang_konfirmasi').val(obj.nama_barang);
+    $('#jumlah_restok_konfirmasi').val(obj.jumlah_restok);
+
+    $('#barang_masuk').val(obj.jumlah_restok);
+
+    $('#modalKonfirmasi').css('display','flex');
+  });
+}
+
+function tutupModalKonfirmasi() {
+  $('#modalKonfirmasi').hide();
+}
+
+$(document).ready(function(){
+  $('#formKonfirmasi').on('submit', function(e){
+    e.preventDefault();
+
+    const id = $('#id_konfirmasi').val();
+    const barangMasuk = parseInt($('#barang_masuk').val()) || 0;
+
+    $.post('proses_ajukan_restok.php', {
+      aksi: 'selesai',
+      id: id,
+      barang_masuk: barangMasuk
+    }, function(res){
+      alert(res);
+      $('#modalKonfirmasi').hide();
+      location.reload();
+    });
+  });
+});
+
+  function bukaModalAjukan() {
+    $('#formAjukan')[0].reset();
+    $('#id_ajukan').val('');
+    $('#judulModal').text('Ajukan Restok Barang');
+    $('#modalAjukan').css('display', 'flex');
+  }
+
+  function tutupModalAjukan() {
+    $('#modalAjukan').hide();
+  }
+
+  $(document).ready(function () {
+    $('#tabel-ajukan').DataTable({
+      "pageLength": 10,
+      "lengthMenu": [5, 10, 25, 50],
+      "columnDefs": [{ "orderable": false, "targets": 6 }],
+        "language": {
+      "emptyTable": "Belum ada pengajuan restok gudang",
       "info": "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
       "infoEmpty": "Menampilkan 0 sampai 0 dari 0 data",
       "infoFiltered": "(disaring dari _MAX_ data total)",
@@ -431,88 +524,59 @@ $(document).ready(function () {
         "first": "Pertama",
         "last": "Terakhir",
         "next": "Berikutnya",
-        "previous": "Sebbelumnya"
+        "previous": "Sebelumnya"
       }
     }
+    });
+
+    $('#id_barang').on('change', function(){
+      const selected = $(this).find(':selected');
+      const harga = selected.data('harga') || 0;
+      $('#harga').val(harga);
+      $('#jumlah_restok').val('');
+      $('#total_harga').val('');
+    });
+
+    $('#jumlah_restok').on('input', function(){
+      const jml = parseInt($('#jumlah_restok').val()) || 0;
+      const harga = parseInt($('#harga').val()) || 0;
+      $('#total_harga').val(jml * harga);
+    });
+
+    $('#formAjukan').submit(function(e){
+      e.preventDefault();
+      $.post('proses_ajukan_restok.php', $(this).serialize(), function(res){
+        alert(res);
+        $('#modalAjukan').hide();
+        location.reload();
+      });
+    });
   });
-});
 
-// Buka/tutup modal
-function bukaModalAjukan() {
-  $('#formAjukan')[0].reset();
-  $('#id_ajukan').val('');
-  $('#judulModal').text('Ajukan Restok Barang');
-  $('#modalAjukan').css('display','flex');
-}
+  function editAjukan(id) {
+    $.post('proses_ajukan_restok.php', {aksi: 'ambil', id: id}, function(res){
+      let obj = JSON.parse(res);
+      if (obj.error) {
+        alert(obj.error);
+        return;
+      }
+      $('#judulModal').text('Edit Pengajuan Restok');
+      $('#id_ajukan').val(obj.id);
+      $('#id_barang').val(obj.id_barang).change();
+      $('#harga').val(obj.harga);
+      $('#jumlah_restok').val(obj.jumlah_restok);
+      $('#total_harga').val(obj.total_harga);
+      $('#modalAjukan').css('display','flex');
+    });
+  }
 
-function tutupModalAjukan(){
-  $('#modalAjukan').hide();
-}
+  function hapusAjukan(id) {
+    if (!confirm('Yakin ingin menghapus pengajuan ini?')) return;
+    $.post('proses_ajukan_restok.php', {aksi: 'hapus', id: id}, function(res){
+      alert(res);
+      location.reload();
+    });
+  }
 
-// Ketika pilih barang → isi nama & harga
-$('#id_barang').on('change', function(){
-  const selected = $(this).find(':selected');
-  const nama  = selected.text();
-  const harga = selected.data('harga') || 0;
 
-  $('#nama_barang').val(nama);
-  $('#harga').val(harga);
-  // reset jumlah & total
-  $('#jumlah_restok').val('');
-  $('#total_harga').val('');
-});
-
-// Hitung total harga otomatis
-$('#jumlah_restok').on('input', function(){
-  const jml   = parseInt($('#jumlah_restok').val()) || 0;
-  const harga = parseInt($('#harga').val()) || 0;
-  $('#total_harga').val(jml * harga);
-});
-
-// Submit pengajuan (baru / edit)
-$('#formAjukan').submit(function(e){
-  e.preventDefault();
-  $.post('proses_ajukan_restok.php', $(this).serialize(), function(res){
-    alert(res);
-    $('#modalAjukan').hide();
-    location.reload();
-  });
-});
-
-// EDIT pengajuan (Menunggu/Ditolak)
-function editAjukan(id) {
-  $.post('proses_ajukan_restok.php', {aksi:'ambil', id:id}, function(res){
-    let obj = JSON.parse(res);
-    if (obj.error) {
-      alert(obj.error);
-      return;
-    }
-    $('#judulModal').text('Edit Pengajuan Restok');
-    $('#id_ajukan').val(obj.id);
-    $('#id_barang').val(obj.id_barang).change();
-    $('#nama_barang').val(obj.nama_barang);
-    $('#harga').val(obj.harga);
-    $('#jumlah_restok').val(obj.jumlah_restok);
-    $('#total_harga').val(obj.total_harga);
-    $('#modalAjukan').css('display','flex');
-  });
-}
-
-// HAPUS pengajuan (Menunggu/Ditolak/Selesai)
-function hapusAjukan(id) {
-  if (!confirm('Yakin ingin menghapus pengajuan ini?')) return;
-  $.post('proses_ajukan_restok.php', {aksi:'hapus', id:id}, function(res){
-    alert(res);
-    location.reload();
-  });
-}
-
-// Gudang menandai sudah beli → stok ditambah & status jadi Selesai
-function selesaiRestok(id) {
-  if(!confirm('Tandai pengajuan ini sebagai SELESAI dan tambahkan stok barang?')) return;
-  $.post('proses_ajukan_restok.php', {aksi:'selesai', id:id}, function(res){
-    alert(res);
-    location.reload();
-  });
-}
 </script>

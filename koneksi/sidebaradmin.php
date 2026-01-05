@@ -223,18 +223,22 @@ $halaman = basename($_SERVER['PHP_SELF']);
     </div>
 
     <div class="daftar-menu">
-      <a href="../pengguna/pengguna.php" class="<?= $halaman == 'pengguna.php' ? 'active' : '' ?>">
-        <i class="fa-solid fa-user-gear"></i> Data Pengguna
+
+    <a href="../outlet/outlet.php" class="<?= $halaman == 'outlet.php' ? 'active' : '' ?>">
+    <i class="fa-solid fa-store"></i> Data Outlet
+     </a>
+      <a href="../akun/akun.php" class="<?= $halaman == 'akun.php' ? 'active' : '' ?>">
+        <i class="fa-solid fa-user-gear"></i> Data Akun
+      </a>
+     <a href="../kategori/kategori.php" class="<?= $halaman == 'kategori.php' ? 'active' : '' ?>">
+    <i class="fa-solid fa-tags"></i> Data Kategori
+    </a>
+      <a href="../barang/barang.php" class="<?= $halaman == 'barang.php' ? 'active' : '' ?>">
+        <i class="fa-solid fa-box-open"></i> Data Barang
       </a>
       <a href="../menu/menu.php" class="<?= $halaman == 'menu.php' ? 'active' : '' ?>">
         <i class="fa-solid fa-drumstick-bite"></i> Data Menu
       </a>
-      <a href="../barang/barang.php" class="<?= $halaman == 'barang.php' ? 'active' : '' ?>">
-        <i class="fa-solid fa-box-open"></i> Data Barang
-      </a>
-      <a href="../outlet/outlet.php" class="<?= $halaman == 'outlet.php' ? 'active' : '' ?>">
-    <i class="fa-solid fa-store"></i> Data Outlet
-     </a>
 
     </div>
     <button class="tombol-keluar" id="keluar">

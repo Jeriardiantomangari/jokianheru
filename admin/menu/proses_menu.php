@@ -1,102 +1,80 @@
 <?php
 include '../../koneksi/koneksi.php';
 
-// AMBIL DATA SATU MENU (UNTUK EDIT)
-if (isset($_POST['aksi']) && $_POST['aksi'] === 'ambil') {
-    $id = (int)$_POST['id'];
-    $q  = mysqli_query($conn, "SELECT * FROM menu_makanan WHERE id='$id'");
-    $data = mysqli_fetch_assoc($q);
-    echo json_encode($data);
-    exit;
-}
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $aksi = $_POST['aksi'] ?? '';
 
-// HAPUS MENU
-if (isset($_POST['aksi']) && $_POST['aksi'] === 'hapus') {
-    $id = (int)$_POST['id'];
+    if ($aksi === 'ambil') {
+        // Ambil data menu untuk edit
+        $id = $_POST['id'];
+        $result = mysqli_query($conn, "SELECT * FROM menu WHERE id_menu='$id'");
+        $row = mysqli_fetch_assoc($result);
+        echo json_encode($row);
+    } elseif ($aksi === 'hapus') {
+        // Hapus menu
+        $id = $_POST['id'];
+        $result = mysqli_query($conn, "SELECT gambar FROM menu WHERE id_menu='$id'");
+        $row = mysqli_fetch_assoc($result);
+        $gambar = $row['gambar'];
 
-    // opsional: hapus file gambar juga
-    $q = mysqli_query($conn, "SELECT gambar FROM menu_makanan WHERE id='$id'");
-    $d = mysqli_fetch_assoc($q);
-    if (!empty($d['gambar'])) {
-        $filePath = "../../uploads/menu/" . $d['gambar'];
-        if (file_exists($filePath)) {
-            unlink($filePath);
-        }
-    }
-
-    mysqli_query($conn, "DELETE FROM menu_makanan WHERE id='$id'");
-    exit;
-}
-
-// ---------------- TAMBAH / UPDATE MENU ----------------
-
-$id         = $_POST['id'] ?? '';
-$nama_menu  = mysqli_real_escape_string($conn, $_POST['nama_menu']);
-$kategori   = mysqli_real_escape_string($conn, $_POST['kategori']);
-$harga      = (int)$_POST['harga'];
-$gambar_lama = $_POST['gambar_lama'] ?? '';
-
-$nama_file_baru = '';
-
-// CEK JIKA ADA FILE GAMBAR YANG DIUPLOAD
-if (isset($_FILES['gambar']) && $_FILES['gambar']['error'] === UPLOAD_ERR_OK) {
-    $tmp_name = $_FILES['gambar']['tmp_name'];
-    $nama_asli = $_FILES['gambar']['name'];
-
-    $ext = strtolower(pathinfo($nama_asli, PATHINFO_EXTENSION));
-    $ext_valid = ['jpg','jpeg','png','gif','webp'];
-
-    if (in_array($ext, $ext_valid)) {
-        // bikin nama unik, misal pakai timestamp + random
-        $nama_file_baru = time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
-
-        $folder_tujuan = '../../uploads/menu/';
-        if (!is_dir($folder_tujuan)) {
-            mkdir($folder_tujuan, 0777, true);
-        }
-
-        move_uploaded_file($tmp_name, $folder_tujuan . $nama_file_baru);
-
-        // kalau update dan ada gambar lama, hapus file lama
-        if (!empty($gambar_lama)) {
-            $file_lama = $folder_tujuan . $gambar_lama;
-            if (file_exists($file_lama)) {
-                unlink($file_lama);
+        if ($gambar) {
+            $path = "../../uploads/menu/$gambar";
+            if (file_exists($path)) {
+                unlink($path);
             }
         }
+
+        mysqli_query($conn, "DELETE FROM menu WHERE id_menu='$id'");
+        echo "Menu berhasil dihapus";
+    } else {
+        // Tambah/Edit Menu
+        $id = $_POST['id'] ?? '';
+        $nama_menu = mysqli_real_escape_string($conn, $_POST['nama_menu']);
+        $jenis = mysqli_real_escape_string($conn, $_POST['kategori']);  // Sesuaikan dengan kategori
+        $harga = (int)$_POST['harga'];
+        $gambar_lama = $_POST['gambar_lama'] ?? '';
+
+        $gambar_baru = '';
+        if (isset($_FILES['gambar']) && $_FILES['gambar']['error'] === UPLOAD_ERR_OK) {
+            $file_temp = $_FILES['gambar']['tmp_name'];
+            $file_name = $_FILES['gambar']['name'];
+            $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+
+            $valid_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            if (in_array($file_ext, $valid_extensions)) {
+                $gambar_baru = time() . '_' . bin2hex(random_bytes(4)) . '.' . $file_ext;
+                $upload_dir = '../../uploads/menu/';
+                if (!is_dir($upload_dir)) {
+                    mkdir($upload_dir, 0777, true);
+                }
+                move_uploaded_file($file_temp, $upload_dir . $gambar_baru);
+
+                // Hapus gambar lama jika ada
+                if ($gambar_lama && file_exists($upload_dir . $gambar_lama)) {
+                    unlink($upload_dir . $gambar_lama);
+                }
+            }
+        }
+
+        if ($id) {
+            // Update menu
+            $sql = "UPDATE menu SET 
+                    nama_menu='$nama_menu', 
+                    jenis='$jenis', 
+                    harga='$harga' 
+                    " . ($gambar_baru ? ", gambar='$gambar_baru'" : "") . " 
+                    WHERE id_menu='$id'";
+        } else {
+            // Tambah menu
+            $sql = "INSERT INTO menu (nama_menu, jenis, harga, gambar) 
+                    VALUES ('$nama_menu', '$jenis', '$harga', '$gambar_baru')";
+        }
+
+        if (mysqli_query($conn, $sql)) {
+            echo "Menu berhasil disimpan";
+        } else {
+            echo "Terjadi kesalahan: " . mysqli_error($conn);
+        }
     }
 }
-
-if ($id === '' || $id === null) {
-    // ---------------- TAMBAH ----------------
-    if ($nama_file_baru !== '') {
-        $sql = "INSERT INTO menu_makanan (nama_menu, kategori, harga, gambar)
-                VALUES ('$nama_menu', '$kategori', '$harga', '$nama_file_baru')";
-    } else {
-        $sql = "INSERT INTO menu_makanan (nama_menu, kategori, harga)
-                VALUES ('$nama_menu', '$kategori', '$harga')";
-    }
-} else {
-    // ---------------- UPDATE ----------------
-    $id  = (int)$id;
-
-    if ($nama_file_baru !== '') {
-        // update termasuk gambar
-        $sql = "UPDATE menu_makanan SET
-                    nama_menu  = '$nama_menu',
-                    kategori   = '$kategori',
-                    harga      = '$harga',
-                    gambar     = '$nama_file_baru'
-                WHERE id = '$id'";
-    } else {
-        // tidak ada gambar baru, gambar tetap
-        $sql = "UPDATE menu_makanan SET
-                    nama_menu  = '$nama_menu',
-                    kategori   = '$kategori',
-                    harga      = '$harga'
-                WHERE id = '$id'";
-    }
-}
-
-mysqli_query($conn, $sql) or die(mysqli_error($conn));
-echo "sukses";
+?>

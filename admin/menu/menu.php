@@ -308,7 +308,7 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
       <tr>
         <th>No.</th>
         <th>Nama Menu</th>
-        <th>Kategori</th>
+        <th>Jenis</th>
         <th>Harga</th>
         <th>Gambar</th> <!-- kolom baru -->
         <th>Aksi</th>
@@ -317,13 +317,13 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
     <tbody>
       <?php
       $no=1;
-      $query = mysqli_query($conn,"SELECT * FROM menu_makanan ORDER BY id ASC");
+      $query = mysqli_query($conn,"SELECT * FROM menu ORDER BY id_menu ASC");
       while($row=mysqli_fetch_assoc($query)) {
       ?>
       <tr>
         <td data-label="No"><?= $no++; ?></td>
         <td data-label="Nama Menu"><?= htmlspecialchars($row['nama_menu']); ?></td>
-        <td data-label="Kategori"><?= htmlspecialchars($row['kategori']); ?></td>
+        <td data-label="Jenis"><?= htmlspecialchars($row['jenis']); ?></td>
         <td data-label="Harga">Rp <?= number_format($row['harga'],2,',','.'); ?></td>
 
         <td data-label="Gambar">
@@ -336,10 +336,10 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
         </td>
 
         <td data-label="Aksi">
-          <button class="tombol tombol-edit" onclick="editMenu(<?= $row['id']; ?>)">
+          <button class="tombol tombol-edit" onclick="editMenu(<?= $row['id_menu']; ?>)">
             <i class="fa-solid fa-pen-to-square"></i> Edit
           </button>
-          <button class="tombol tombol-hapus" onclick="hapusMenu(<?= $row['id']; ?>)">
+          <button class="tombol tombol-hapus" onclick="hapusMenu(<?= $row['id_menu']; ?>)">
             <i class="fa-solid fa-trash"></i> Hapus
           </button>
         </td>
@@ -362,7 +362,7 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
       <input type="text" name="nama_menu" id="nama_menu" placeholder="Nama Menu" required>
 
       <select name="kategori" id="kategori" required>
-        <option value="">-- Pilih Kategori --</option>
+        <option value="">-- Pilih Jenis --</option>
         <option value="Makanan">Makanan</option>
         <option value="Minuman">Minuman</option>
       </select>
@@ -420,7 +420,7 @@ function editMenu(id) {
   $.post('proses_menu.php', {aksi:'ambil', id:id}, function(data){
     let obj = JSON.parse(data);
     $('#judulModal').text('Edit Menu');
-    $('#idMenu').val(obj.id);
+    $('#idMenu').val(obj.id_menu);
     $('#nama_menu').val(obj.nama_menu);
     $('#kategori').val(obj.kategori);
     $('#harga').val(obj.harga);

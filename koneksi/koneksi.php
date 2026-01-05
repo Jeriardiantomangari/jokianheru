@@ -2,7 +2,7 @@
 $host = "localhost";
 $user = "root";
 $pass = "";
-$db = "db_dfc";
+$db = "db_dfcbaru";
 
 $conn = mysqli_connect($host, $user, $pass, $db);
 

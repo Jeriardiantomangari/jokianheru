@@ -2,7 +2,6 @@
 session_start();
 include '../../koneksi/koneksi.php';
 
-// Hanya GUDANG yang boleh akses file ini
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'gudang') {
     http_response_code(403);
     echo "Akses ditolak (khusus gudang)";
@@ -18,15 +17,14 @@ if (isset($_POST['aksi']) && $_POST['aksi'] === 'ambil') {
     }
 
     $id = (int)$_POST['id'];
-    $q  = mysqli_query($conn, "SELECT * FROM barang WHERE id = $id");
+    $q  = mysqli_query($conn, "SELECT * FROM stok_gudang WHERE Id_stok_gudang = $id");
 
     if ($row = mysqli_fetch_assoc($q)) {
         echo json_encode([
-            'id'          => $row['id'],
-            'nama_barang' => $row['nama_barang'],
-            'jenis'       => $row['jenis'],
-            'harga'       => (int)$row['harga'],
-            'stok'        => (int)$row['stok'],
+            'id'          => $row['Id_stok_gudang'],       
+            'nama_barang' => $row['Nama_barang'],          
+            'kategori'    => $row['Kategori'],            
+            'jumlah_stok' => (int)$row['Jumlah_stok'],      
         ]);
     } else {
         echo json_encode(['error' => 'Data tidak ditemukan']);
@@ -35,7 +33,6 @@ if (isset($_POST['aksi']) && $_POST['aksi'] === 'ambil') {
     exit;
 }
 
-// TANPA aksi → GUDANG hanya boleh UPDATE STOK (bukan tambah / hapus)
 $id   = isset($_POST['id']) ? (int)$_POST['id'] : 0;
 $stok = isset($_POST['stok']) ? (int)$_POST['stok'] : 0;
 
@@ -45,7 +42,7 @@ if ($id <= 0) {
 }
 
 // Update hanya kolom STOK
-$sql  = "UPDATE barang SET stok = ? WHERE id = ?";
+$sql  = "UPDATE stok_gudang SET Jumlah_stok = ? WHERE Id_stok_gudang = ?";
 $stmt = mysqli_prepare($conn, $sql);
 mysqli_stmt_bind_param($stmt, "ii", $stok, $id);
 mysqli_stmt_execute($stmt);

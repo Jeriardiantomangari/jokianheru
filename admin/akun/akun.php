@@ -10,7 +10,7 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
 }
 
 // TAMBAHAN: ambil data outlet untuk dropdown
-$qo_outlet = mysqli_query($conn, "SELECT id, nama_outlet FROM outlet ORDER BY nama_outlet ASC");
+$qo_outlet = mysqli_query($conn, "SELECT id_outlet, nama_outlet FROM outlet ORDER BY nama_outlet ASC");
 ?>
 <!-- CDN jQuery dan DataTables -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
@@ -110,8 +110,8 @@ $qo_outlet = mysqli_query($conn, "SELECT id, nama_outlet FROM outlet ORDER BY na
   box-shadow:0 0 0 2px rgba(251,140,0,0.15);
 }
 
-/* Tabel Pengguna */
-.tabel-pengguna { 
+/* Tabel Akun */
+.tabel-akun { 
   width:100%; 
   border-collapse:collapse; 
   background:white; 
@@ -121,11 +121,11 @@ $qo_outlet = mysqli_query($conn, "SELECT id, nama_outlet FROM outlet ORDER BY na
   table-layout:fixed; 
 }
 
-.tabel-pengguna thead tr {
+.tabel-akun thead tr {
   background: linear-gradient(90deg, #d32f2f, #ffb300);
 }
 
-.tabel-pengguna th { 
+.tabel-akun th { 
   color:#ffffff; 
   text-align:left; 
   padding:12px 15px; 
@@ -133,7 +133,7 @@ $qo_outlet = mysqli_query($conn, "SELECT id, nama_outlet FROM outlet ORDER BY na
   font-size:14px;
 }
 
-.tabel-pengguna td { 
+.tabel-akun td { 
   padding:10px 15px; 
   border-bottom:1px solid #ffe0b2; 
   border-right:1px solid #fff3e0; 
@@ -141,7 +141,7 @@ $qo_outlet = mysqli_query($conn, "SELECT id, nama_outlet FROM outlet ORDER BY na
   color:#424242;
 }
 
-.tabel-pengguna tr:nth-child(even){
+.tabel-akun tr:nth-child(even){
   background:#fffdf7;
 }
 
@@ -245,7 +245,7 @@ $qo_outlet = mysqli_query($conn, "SELECT id, nama_outlet FROM outlet ORDER BY na
     margin: 5px auto;
   }
 
-  .tabel-pengguna,
+  .tabel-akun,
   thead,
   tbody,
   th,
@@ -295,12 +295,12 @@ $qo_outlet = mysqli_query($conn, "SELECT id, nama_outlet FROM outlet ORDER BY na
 </style>
 
 <div class="konten-utama">
-  <h2>Data Pengguna</h2>
+  <h2>Data Akun</h2>
 
   <button class="tombol tombol-cetak"><i class="fa-solid fa-print"></i> Cetak</button>
-  <button class="tombol tombol-tambah" onclick="tambahPengguna()"><i class="fa-solid fa-plus"></i> Tambah</button>
+  <button class="tombol tombol-tambah" onclick="tambahAkun()"><i class="fa-solid fa-plus"></i> Tambah</button>
 
-  <table id="tabel-pengguna" class="tabel-pengguna">
+  <table id="tabel-akun" class="tabel-akun">
     <thead>
       <tr>
         <th>No.</th>
@@ -314,17 +314,19 @@ $qo_outlet = mysqli_query($conn, "SELECT id, nama_outlet FROM outlet ORDER BY na
       </tr>
     </thead>
     <tbody>
-      <?php
-      $no=1;
-      // TAMBAHAN: join dengan tabel outlet untuk ambil nama_outlet
-      $query = mysqli_query($conn,"
-        SELECT pengguna.*, outlet.nama_outlet 
-        FROM pengguna 
-        LEFT JOIN outlet ON pengguna.id_outlet = outlet.id
-        ORDER BY pengguna.id ASC
-      ");
-      while($row=mysqli_fetch_assoc($query)) {
-      ?>
+<?php
+$no = 1;
+// TAMBAHAN: join dengan tabel outlet untuk ambil nama_outlet
+$query = mysqli_query($conn, "
+    SELECT akun.*, outlet.nama_outlet 
+    FROM akun 
+    LEFT JOIN outlet ON akun.id_outlet = outlet.id_outlet
+    ORDER BY akun.id_akun ASC
+");
+while($row = mysqli_fetch_assoc($query)) {
+?>
+
+
       <tr>
         <td data-label="No"><?php echo $no++; ?></td>
         <td data-label="Nama"><?php echo $row['nama']; ?></td>
@@ -344,10 +346,10 @@ $qo_outlet = mysqli_query($conn, "SELECT id, nama_outlet FROM outlet ORDER BY na
         </td>
         <td data-label="Role"><?php echo $row['role']; ?></td>
         <td data-label="Aksi">
-          <button class="tombol tombol-edit" onclick="editPengguna(<?php echo $row['id']; ?>)">
+          <button class="tombol tombol-edit" onclick="editAkun(<?php echo $row['id_akun']; ?>)">
             <i class="fa-solid fa-pen-to-square"></i> Edit
           </button>
-          <button class="tombol tombol-hapus" onclick="hapusPengguna(<?php echo $row['id']; ?>)">
+          <button class="tombol tombol-hapus" onclick="hapusAkun(<?php echo $row['id_akun']; ?>)">
             <i class="fa-solid fa-trash"></i> Hapus
           </button>
         </td>
@@ -357,13 +359,13 @@ $qo_outlet = mysqli_query($conn, "SELECT id, nama_outlet FROM outlet ORDER BY na
   </table>
 </div>
 
-<!-- Modal Tambah/Edit Pengguna -->
-<div id="modalPengguna" class="kotak-modal">
+<!-- Modal Tambah/Edit Akun -->
+<div id="modalAkun" class="kotak-modal">
   <div class="isi-modal">
     <span class="tutup-modal" onclick="tutupModal()">&times;</span>
-    <h3 id="judulModal">Tambah Pengguna</h3>
-    <form id="formPengguna">
-      <input type="hidden" name="id" id="idPengguna">
+    <h3 id="judulModal">Tambah Akun</h3>
+    <form id="formAkun">
+      <input type="hidden" name="id" id="idAkun">
       <input type="text" name="nama" id="nama" placeholder="Nama" required>
       <input type="text" name="username" id="username" placeholder="Username" required>
       <input type="text" name="password" id="password" placeholder="Password" required>
@@ -384,13 +386,13 @@ $qo_outlet = mysqli_query($conn, "SELECT id, nama_outlet FROM outlet ORDER BY na
         // reset pointer jika perlu
         mysqli_data_seek($qo_outlet, 0);
         while($o = mysqli_fetch_assoc($qo_outlet)){ ?>
-          <option value="<?php echo $o['id']; ?>">
+          <option value="<?php echo $o['id_outlet']; ?>">
             <?php echo $o['nama_outlet']; ?>
           </option>
         <?php } ?>
       </select>
 
-      <button type="submit" id="simpanPengguna">Simpan</button>
+      <button type="submit" id="simpanAkun">Simpan</button>
     </form>
   </div>
 </div>
@@ -398,7 +400,7 @@ $qo_outlet = mysqli_query($conn, "SELECT id, nama_outlet FROM outlet ORDER BY na
 <script>
 // DataTables
 $(document).ready(function () {
-  $('#tabel-pengguna').DataTable({
+  $('#tabel-akun').DataTable({
     "pageLength": 10,
     "lengthMenu": [5, 10, 25, 50],
     "columnDefs": [{
@@ -426,33 +428,33 @@ $(document).ready(function () {
 });
 
 // Modal Tambah
-function tambahPengguna() {
-  $('#formPengguna')[0].reset();
-  $('#idPengguna').val('');
-  $('#judulModal').text('Tambah Pengguna');
-  $('#modalPengguna').css('display','flex');
+function tambahAkun() {
+  $('#formAkun')[0].reset();
+  $('#idAkun').val('');
+  $('#judulModal').text('Tambah Akun');
+  $('#modalAkun').css('display','flex');
 }
 
 // Modal Edit
-function editPengguna(id) {
-  $.post('proses_pengguna.php', {aksi:'ambil', id:id}, function(data){
+function editAkun(id) {
+  $.post('proses_akun.php', {aksi:'ambil', id:id}, function(data){
     let obj = JSON.parse(data);
-    $('#judulModal').text('Edit Pengguna');
-    $('#idPengguna').val(obj.id);
+    $('#judulModal').text('Edit Akun');
+    $('#idAkun').val(obj.id_akun);  // Pastikan ini benar sesuai dengan kolom 'id_akun'
     $('#nama').val(obj.nama);
     $('#username').val(obj.username);
     $('#password').val(obj.password);
     $('#role').val(obj.role);
-    // TAMBAHAN: set outlet saat edit
     $('#id_outlet').val(obj.id_outlet);
-    $('#modalPengguna').css('display','flex');
+    $('#modalAkun').css('display','flex');
   });
 }
 
+
 // Hapus
-function hapusPengguna(id){
-  if(confirm('Apakah Anda yakin ingin menghapus data pengguna ini?')){
-    $.post('proses_pengguna.php', {aksi:'hapus', id:id}, function(){
+function hapusAkun(id){
+  if(confirm('Apakah Anda yakin ingin menghapus data akun ini?')){
+    $.post('proses_akun.php', {aksi:'hapus', id:id}, function(){
       alert('Data berhasil dihapus!');
       location.reload();
     });
@@ -461,16 +463,16 @@ function hapusPengguna(id){
 
 // Tutup Modal
 function tutupModal(){ 
-  $('#modalPengguna').hide(); 
+  $('#modalAkun').hide(); 
 }
 
 // Submit Form (Tambah/Update)
-$('#formPengguna').submit(function(e){
+$('#formAkun').submit(function(e){
   e.preventDefault();
-  const id        = $('#idPengguna').val();
+  const id        = $('#idAkun').val();
   const role      = $('#role').val();
   const idOutlet  = $('#id_outlet').val();
-  const pesan     = id ? 'Data pengguna berhasil diubah!' : 'Data pengguna berhasil ditambahkan!';
+  const pesan     = id ? 'Data akun berhasil diubah!' : 'Data akun berhasil ditambahkan!';
 
   // TAMBAHAN: validasi kasir wajib pilih outlet
   if(role === 'kasir' && !idOutlet){
@@ -478,8 +480,8 @@ $('#formPengguna').submit(function(e){
     return;
   }
 
-  $.post('proses_pengguna.php', $(this).serialize(), function(){
-    $('#modalPengguna').hide();
+  $.post('proses_akun.php', $(this).serialize(), function(){
+    $('#modalAkun').hide();
     alert(pesan);
     location.reload();
   });
@@ -490,16 +492,16 @@ $('.tombol-cetak').click(function(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
   doc.setFontSize(14);
-  doc.text("Data Pengguna", 105, 15, {align:"center"});
+  doc.text("Data Akun", 105, 15, {align:"center"});
 
   let headers = [];
   // TAMBAHAN: sekarang kolom Aksi index ke-6, jadi skip index 6
-  $('#tabel-pengguna thead th').each(function(index){ 
+  $('#tabel-akun thead th').each(function(index){ 
     if(index !== 6) headers.push($(this).text()); 
   });
 
   let data = [];
-  $('#tabel-pengguna tbody tr').each(function(){
+  $('#tabel-akun tbody tr').each(function(){
     let rowData=[];
     $(this).find('td').each(function(index){ 
       if(index !== 6) rowData.push($(this).text()); 
@@ -517,6 +519,6 @@ $('.tombol-cetak').click(function(){
     margin:{top:20} 
   });
 
-  doc.save('Data_Pengguna.pdf');
+  doc.save('Data_Akun.pdf');
 });
 </script>

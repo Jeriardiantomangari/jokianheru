@@ -4,26 +4,23 @@ include 'koneksi/koneksi.php';
 
 $error    = '';
 $username = '';
-$role_in  = ''; // 🔹 supaya nggak undefined waktu pertama kali load halaman
+$role_in  = ''; 
 
-// Jika form disubmit
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['role'], $_POST['username'], $_POST['password'])) {
-    // Normalisasi input
+    
     $role_in  = strtolower(trim($_POST['role']));
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
 
-    // Ambil data dari tabel pengguna
-    // 🔹 sekarang sekalian ambil id_outlet (kalau dipakai kasir)
-    // struktur: id, nama, username, password, role, id_outlet
-    $sql  = "SELECT id, nama, username, password, role, id_outlet
-             FROM pengguna
+    // Ambil data dari tabel akun
+    $sql  = "SELECT id_akun, nama, username, password, role, id_outlet
+             FROM akun
              WHERE username = ? AND role = ? 
              LIMIT 1";
     $stmt = mysqli_prepare($conn, $sql);
 
     if ($stmt === false) {
-        // Kalau prepare gagal
         $error = 'Terjadi kesalahan pada server (prepare gagal).';
     } else {
         mysqli_stmt_bind_param($stmt, "ss", $username, $role_in);
@@ -31,37 +28,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['role'], $_POST['usern
         $res = mysqli_stmt_get_result($stmt);
 
         if ($res && $u = mysqli_fetch_assoc($res)) {
-
-            // VERSI SAAT INI: password masih plain TEXT
             $password_match = ($password === $u['password']);
 
-            // 🔹 Jika nanti sudah pakai password_hash:
-            // $password_match = password_verify($password, $u['password']);
-
             if ($password_match) {
-                // Set sesi umum
                 $_SESSION['login']    = true;
-                $_SESSION['role']     = $u['role'];        // dari DB
-                $_SESSION['id_user']  = (int)$u['id'];
+                $_SESSION['role']     = $u['role'];       
+                $_SESSION['id_akun']  = (int)$u['id_akun'];
                 $_SESSION['nama']     = $u['nama'];
                 $_SESSION['username'] = $u['username'];
 
-                // 🔹 simpan id_outlet kalau ada (untuk kasir/outlet)
                 $_SESSION['id_outlet'] = isset($u['id_outlet']) ? (int)$u['id_outlet'] : null;
 
-                // Redirect sesuai role
                 if ($role_in === 'owner') {
                     header("Location: owner/konfirmasi_restok/konfirmasi_restok.php");
                     exit;
                 } elseif ($role_in === 'admin') {
-                    header("Location: admin/pengguna/pengguna.php");
+                    header("Location: admin/akun/akun.php");
                     exit;
                 } elseif ($role_in === 'gudang') {
                     header("Location: gudang/stok_barang/stok_barang.php");
                     exit;
                 } elseif ($role_in === 'kasir') {
-                    // 🔹 kalau nanti mau diarahkan ke stok outlet atau pengajuan restok:
-                    // header("Location: kasir/stok_outlet/kasir_stok_outlet.php");
                     header("Location: kasir/stok_barang/stok_barang.php");
                     exit;
                 } else {

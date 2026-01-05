@@ -9,6 +9,7 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
     exit;
 }
 ?>
+
 <!-- CDN jQuery dan DataTables -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -107,8 +108,8 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   box-shadow:0 0 0 2px rgba(251,140,0,0.15);
 }
 
-/* Tabel Outlet (pakai class lama biar CSS kepakai) */
-.tabel-barang { 
+/* Tabel Kategori */
+.tabel-kategori { 
   width:100%; 
   border-collapse:collapse; 
   background:white; 
@@ -118,11 +119,11 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   table-layout:fixed; 
 }
 
-.tabel-barang thead tr {
+.tabel-kategori thead tr {
   background: linear-gradient(90deg, #d32f2f, #ffb300);
 }
 
-.tabel-barang th { 
+.tabel-kategori th { 
   color:#ffffff; 
   text-align:left; 
   padding:12px 15px; 
@@ -130,7 +131,7 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   font-size:14px;
 }
 
-.tabel-barang td { 
+.tabel-kategori td { 
   padding:10px 15px; 
   border-bottom:1px solid #ffe0b2; 
   border-right:1px solid #fff3e0; 
@@ -138,7 +139,7 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   color:#424242;
 }
 
-.tabel-barang tr:nth-child(even){
+.tabel-kategori tr:nth-child(even){
   background:#fffdf7;
 }
 
@@ -175,7 +176,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
 }
 
 .isi-modal input,
-.isi-modal textarea,
 .isi-modal select { 
   width:100%; 
   padding:10px; 
@@ -186,7 +186,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
 }
 
 .isi-modal input:focus,
-.isi-modal textarea:focus,
 .isi-modal select:focus {
   outline:none;
   border-color:#fb8c00;
@@ -243,7 +242,7 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
     margin: 5px auto;
   }
 
-  .tabel-barang,
+  .tabel-kategori,
   thead,
   tbody,
   th,
@@ -293,36 +292,33 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
 </style>
 
 <div class="konten-utama">
-  <h2>Data Outlet</h2>
+  <h2>Data Kategori</h2>
 
   <button class="tombol tombol-cetak"><i class="fa-solid fa-print"></i> Cetak</button>
-  <button class="tombol tombol-tambah" onclick="tambahOutlet()"><i class="fa-solid fa-plus"></i> Tambah Outlet</button>
+  <button class="tombol tombol-tambah" onclick="tambahKategori()"><i class="fa-solid fa-plus"></i> Tambah Kategori</button>
 
-  <table id="tabel-outlet" class="tabel-barang">
+  <table id="tabel-kategori" class="tabel-kategori">
     <thead>
       <tr>
         <th>No.</th>
-        <th>Nama Outlet</th>
-        <th>Alamat</th>
+        <th>Nama Kategori</th>
         <th>Aksi</th>
       </tr>
     </thead>
     <tbody>
       <?php
-      $no=1;
-      // tabel: outlet (id, nama_outlet, alamat)
-      $query = mysqli_query($conn,"SELECT * FROM outlet ORDER BY id_outlet ASC");
-      while($row=mysqli_fetch_assoc($query)) {
+      $no = 1;
+      $query = mysqli_query($conn, "SELECT * FROM kategori ORDER BY id_kategori ASC");
+      while ($row = mysqli_fetch_assoc($query)) {
       ?>
       <tr>
         <td data-label="No"><?= $no++; ?></td>
-        <td data-label="Nama Outlet"><?= htmlspecialchars($row['nama_outlet']); ?></td>
-        <td data-label="Alamat"><?= htmlspecialchars($row['alamat']); ?></td>
+        <td data-label="Nama Kategori"><?= htmlspecialchars($row['nama_kategori']); ?></td>
         <td data-label="Aksi">
-          <button class="tombol tombol-edit" onclick="editOutlet(<?= $row['id_outlet']; ?>)">
+          <button class="tombol tombol-edit" onclick="editKategori(<?= $row['id_kategori']; ?>)">
             <i class="fa-solid fa-pen-to-square"></i> Edit
           </button>
-          <button class="tombol tombol-hapus" onclick="hapusOutlet(<?= $row['id_outlet']; ?>)">
+          <button class="tombol tombol-hapus" onclick="hapusKategori(<?= $row['id_kategori']; ?>)">
             <i class="fa-solid fa-trash"></i> Hapus
           </button>
         </td>
@@ -332,19 +328,15 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   </table>
 </div>
 
-<!-- Modal Tambah/Edit Outlet -->
-<div id="modalOutlet" class="kotak-modal">
+<!-- Modal Tambah/Edit Kategori -->
+<div id="modalKategori" class="kotak-modal">
   <div class="isi-modal">
     <span class="tutup-modal" onclick="tutupModal()">&times;</span>
-    <h3 id="judulModal">Tambah Outlet</h3>
-    <form id="formOutlet">
-      <input type="hidden" name="id" id="idOutlet">
-
-      <input type="text" name="nama_outlet" id="nama_outlet" placeholder="Nama Outlet" required>
-
-      <textarea name="alamat" id="alamat" placeholder="Alamat" required></textarea>
-
-      <button type="submit" id="simpanOutlet">Simpan</button>
+    <h3 id="judulModal">Tambah Kategori</h3>
+    <form id="formKategori">
+      <input type="hidden" name="id" id="idKategori">
+      <input type="text" name="nama_kategori" id="nama_kategori" placeholder="Nama Kategori" required>
+      <button type="submit" id="simpanKategori">Simpan</button>
     </form>
   </div>
 </div>
@@ -352,11 +344,11 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
 <script>
 // DataTables
 $(document).ready(function () {
-  $('#tabel-outlet').DataTable({
+  $('#tabel-kategori').DataTable({
     "pageLength": 10,
     "lengthMenu": [5, 10, 25, 50],
     "columnDefs": [{
-      "orderable": false, "targets": 3   // kolom Aksi
+      "orderable": false, "targets": 2   
     }],
     "language": {
       "emptyTable": "Tidak ada data tersedia",
@@ -379,84 +371,82 @@ $(document).ready(function () {
 });
 
 // Modal Tambah
-function tambahOutlet() {
-  $('#formOutlet')[0].reset();
-  $('#idOutlet').val('');
-  $('#judulModal').text('Tambah Outlet');
-  $('#modalOutlet').css('display','flex');
+function tambahKategori() {
+  $('#formKategori')[0].reset();
+  $('#idKategori').val('');
+  $('#judulModal').text('Tambah Kategori');
+  $('#modalKategori').css('display', 'flex');
 }
 
 // Modal Edit
-function editOutlet(id) {
-  $.post('proses_outlet.php', {aksi:'ambil', id:id}, function(data){
+function editKategori(id) {
+  $.post('proses_kategori.php', {aksi: 'ambil', id: id}, function (data) {
     let obj = JSON.parse(data);
-    $('#judulModal').text('Edit Outlet');
-    $('#idOutlet').val(obj.id_outlet);
-    $('#nama_outlet').val(obj.nama_outlet);
-    $('#alamat').val(obj.alamat);
-    $('#modalOutlet').css('display','flex');
+    $('#judulModal').text('Edit Kategori');
+    $('#idKategori').val(obj.id_kategori);
+    $('#nama_kategori').val(obj.nama_kategori);
+    $('#modalKategori').css('display', 'flex');
   });
 }
 
 // Hapus
-function hapusOutlet(id){
-  if(confirm('Apakah Anda yakin ingin menghapus outlet ini?')){
-    $.post('proses_outlet.php', {aksi:'hapus', id:id}, function(){
-      alert('Data outlet berhasil dihapus!');
+function hapusKategori(id) {
+  if (confirm('Apakah Anda yakin ingin menghapus kategori ini?')) {
+    $.post('proses_kategori.php', {aksi: 'hapus', id: id}, function () {
+      alert('Kategori berhasil dihapus!');
       location.reload();
     });
   }
 }
 
 // Tutup Modal
-function tutupModal(){ 
-  $('#modalOutlet').hide(); 
+function tutupModal() {
+  $('#modalKategori').hide();
 }
 
 // Submit Form (Tambah/Update)
-$('#formOutlet').submit(function(e){
+$('#formKategori').submit(function (e) {
   e.preventDefault();
-  const id = $('#idOutlet').val();
-  const pesan = id ? 'Data outlet berhasil diubah!' : 'Data outlet berhasil ditambahkan!';
-  $.post('proses_outlet.php', $(this).serialize(), function(){
-    $('#modalOutlet').hide();
+  const id = $('#idKategori').val();
+  const pesan = id ? 'Kategori berhasil diubah!' : 'Kategori berhasil ditambahkan!';
+  $.post('proses_kategori.php', $(this).serialize(), function () {
+    $('#modalKategori').hide();
     alert(pesan);
     location.reload();
   });
 });
 
 // Cetak PDF
-$('.tombol-cetak').click(function(){
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+$('.tombol-cetak').click(function () {
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({orientation: 'portrait', unit: 'mm', format: 'a4'});
   doc.setFontSize(14);
-  doc.text("Data Outlet", 105, 15, {align:"center"});
+  doc.text("Data Kategori", 105, 15, {align: "center"});
 
   let headers = [];
-  // skip kolom Aksi (indeks 3)
-  $('#tabel-outlet thead th').each(function(index){ 
-    if(index !== 3) headers.push($(this).text()); 
+  $('#tabel-kategori thead th').each(function (index) {
+    if (index !== 2) headers.push($(this).text());
   });
 
   let data = [];
-  $('#tabel-outlet tbody tr').each(function(){
-    let rowData=[];
-    $(this).find('td').each(function(index){ 
-      if(index !== 3) rowData.push($(this).text()); 
+  $('#tabel-kategori tbody tr').each(function () {
+    let rowData = [];
+    $(this).find('td').each(function (index) {
+      if (index !== 2) rowData.push($(this).text());
     });
     data.push(rowData);
   });
 
   doc.autoTable({
-    head:[headers], 
-    body:data, 
-    startY:20, 
-    theme:'grid', 
-    headStyles:{fillColor:[211,47,47], textColor:255}, 
-    styles:{fontSize:10}, 
-    margin:{top:20} 
+    head: [headers],
+    body: data,
+    startY: 20,
+    theme: 'grid',
+    headStyles: {fillColor: [211, 47, 47], textColor: 255},
+    styles: {fontSize: 10},
+    margin: {top: 20}
   });
 
-  doc.save('Data_Outlet.pdf');
+  doc.save('Data_Kategori.pdf');
 });
 </script>

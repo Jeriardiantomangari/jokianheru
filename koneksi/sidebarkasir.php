@@ -226,30 +226,20 @@ $halaman = basename($_SERVER['PHP_SELF']);
 
     <div class="daftar-menu">
 
-
-      <!-- MENU 1: PENJUALAN -->
       <a href="../penjualan/penjualan.php" class="<?= $halaman == 'penjualan.php' ? 'active' : '' ?>">
         <i class="fa-solid fa-cash-register"></i> Penjualan
       </a>
-
-        <!-- STOK BARANG -->
       <a href="../stok_barang/stok_barang.php" class="<?= $halaman == 'stok_barang.php' ? 'active' : '' ?>">
         <i class="fa-solid fa-boxes-stacked"></i> Stok Barang
       </a>
-      
-      <!-- MENU 2: PENGAJUAN RESTOK -->
       <a href="../pengajuan_restok/pengajuan_restok.php" class="<?= $halaman == 'pengajuan_restok.php' ? 'active' : '' ?>">
         <i class="fa-solid fa-cart-arrow-down"></i> Pengajuan Restok
       </a>
-
     </div>
-
     <button class="tombol-keluar" id="keluar">
       <i class="fa-solid fa-power-off"></i> Keluar
     </button>
   </div>
-
-  <!-- MENU ATAS -->
   <div class="menu-atas">
     <i class="fa-solid fa-bars tombol-menu" id="tombolMenu"></i>
     <div class="welcome-text">Selamat Datang Kasir</div>

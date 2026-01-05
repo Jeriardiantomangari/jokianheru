@@ -1,43 +1,37 @@
 <?php
 session_start();
-include '../../koneksi/sidebarkasir.php';
+include '../../koneksi/sidebarkasir.php'; 
 include '../../koneksi/koneksi.php';
 
-/**
- * CEK LOGIN & ROLE
- */
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'kasir') {
     header("Location: ../../index.php");
     exit;
 }
 
 if (!isset($_SESSION['id_outlet'])) {
-    die("Outlet untuk kasir belum di-set. Pastikan kolom id_outlet di tabel pengguna dan session sudah benar.");
+    die("Outlet untuk kasir belum di-set. Pastikan kolom id_outlet di tabel akun dan session sudah benar.");
 }
 
-if (!isset($_SESSION['id_user'])) {
-    die("ID kasir belum ada di session. Cek lagi proses login, harus set \$_SESSION['id_user'].");
+if (!isset($_SESSION['id_akun'])) {
+    die("ID kasir belum ada di session. Pastikan saat login set \$_SESSION['id_akun'] dari tabel akun.");
 }
 
-/**
- * AMBIL DATA MENU DARI DATABASE
- */
+$id_outlet = (int)$_SESSION['id_outlet'];
+$id_kasir  = (int)$_SESSION['id_akun'];
+
 $menus = [];
 $qMenu = mysqli_query(
     $conn,
-    "SELECT id, nama_menu, harga, kategori, gambar 
-     FROM menu_makanan 
+    "SELECT id_menu, nama_menu, harga, jenis, gambar
+     FROM menu
      ORDER BY nama_menu"
 );
 while ($r = mysqli_fetch_assoc($qMenu)) {
     $menus[] = $r;
 }
 
-/**
- * AMBIL PESAN SUKSES / ERROR DARI SESSION (FLASH MESSAGE)
- */
-$success_message = $_SESSION['success_message'] ?? '';
-$error_message   = $_SESSION['error_message'] ?? '';
+$pesan_sukses = $_SESSION['success_message'] ?? '';
+$pesan_gagal  = $_SESSION['error_message'] ?? '';
 unset($_SESSION['success_message'], $_SESSION['error_message']);
 ?>
 <!DOCTYPE html>
@@ -55,7 +49,6 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
     background: radial-gradient(circle at top left, #fff7e0 0%, #ffe3b3 40%, #ffffff 100%);
   }
 
-  /* KONTEN UTAMA: isi di tengah, ada ruang untuk sidebar */
   .konten-utama {
     margin-left:250px;  
     margin-top:60px;            
@@ -66,49 +59,41 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
     justify-content:center;         
   }
 
-  .wrapper-penjualan {
+  .pembungkus-penjualan {
     width:100%;
     max-width:1200px;
   }
 
-  /* ALERT */
-  .alert {
+  .pemberitahuan {
     padding:10px 12px;
     border-radius:8px;
     margin-bottom:12px;
     font-size:13px;
   }
 
-  .alert-success {
+  .pemberitahuan-sukses {
     background:#e8f5e9;
     border:1px solid #66bb6a;
     color:#2e7d32;
   }
 
-  .alert-error {
+  .pemberitahuan-gagal {
     background:#ffebee;
     border:1px solid #ef5350;
     color:#c62828;
   }
 
-  /* LAYOUT KIRI / KANAN – TIDAK DALAM 1 KARTU */
-  .layout-penjualan {
+  .tata-letak-penjualan {
     display:flex;
     gap:18px;
     align-items:flex-start;
     flex-wrap:wrap;
   }
 
-  .col-left {
-    flex:0 0 auto;
-  }
+  .kolom-kiri { flex:0 0 auto; }
+  .kolom-kanan { flex:1; min-width:350px; }
 
-  .col-right {
-    flex:1;
-    min-width:350px;
-  }
-
-  .panel {
+  .kotak {
     background:#ffffff;
     border-radius:14px;
     box-shadow:0 6px 18px rgba(0,0,0,0.12);
@@ -116,7 +101,7 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
     border:1px solid #ffe0b2;
   }
 
-  .panel h3 {
+  .kotak h3 {
     margin-top:0;
     margin-bottom:8px;
     font-size:15px;
@@ -126,7 +111,7 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
     gap:6px;
   }
 
-  .panel h3::before {
+  .kotak h3::before {
     content:"";
     width:5px;
     height:18px;
@@ -134,15 +119,14 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
     background:linear-gradient(180deg,#ff9800,#d32f2f);
   }
 
-  /* FILTER & SEARCH MENU */
-  .menu-filters {
+  .penyaring-menu {
     display:flex;
     gap:5px;
     margin-top:4px;
     margin-bottom:8px;
   }
 
-  .menu-search {
+  .cari-menu {
     flex:1;
     padding:7px 9px;
     border-radius:999px;
@@ -150,13 +134,13 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
     font-size:13px;
   }
 
-  .menu-search:focus {
+  .cari-menu:focus {
     outline:none;
     border-color:#fb8c00;
     box-shadow:0 0 0 2px rgba(251,140,0,0.18);
   }
 
-  .menu-kategori {
+  .kategori-menu {
     width:130px;
     padding:7px 9px;
     border-radius:999px;
@@ -165,27 +149,24 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
     background:#fff;
   }
 
-  .menu-kategori:focus {
+  .kategori-menu:focus {
     outline:none;
     border-color:#fb8c00;
     box-shadow:0 0 0 2px rgba(251,140,0,0.18);
   }
 
-  /* GRID MENU – 5 kolom, tiap kartu 150x200 */
-  .menu-grid {
+  .kisi-menu {
     margin-top:6px;
     display:grid;
-    grid-template-columns: repeat(4, 150px);  /* 5 per baris, fixed 150px */
+    grid-template-columns: repeat(4, 150px);
     gap:10px;
     justify-content:flex-start;
-
-    max-height:430px;      /* kalau kebanyakan menu, scroll */
+    max-height:430px;
     overflow-y:auto;
     padding-right:4px;
   }
 
-  /* MENU CARD UKURAN FIX */
-  .menu-card {
+  .kartu-menu {
     background:#ffffff;
     border-radius:10px;
     padding:8px 9px;
@@ -196,16 +177,16 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
     display:flex;
     flex-direction:column;
     width:150px;
-    height:200px;           /* tinggi fix 200px */
+    height:200px;
   }
 
-  .menu-card:hover {
+  .kartu-menu:hover {
     transform:translateY(-2px);
     box-shadow:0 3px 8px rgba(0,0,0,0.16);
     border-color:#ffb74d;
   }
 
-  .menu-image-wrap {
+  .bungkus-gambar-menu {
     width:100%;
     height:110px;
     border-radius:8px;
@@ -219,14 +200,14 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
     color:#b0b0b0;
   }
 
-  .menu-image-wrap img {
+  .bungkus-gambar-menu img {
     width:100%;
     height:100%;
     object-fit:cover;
     display:block;
   }
 
-  .menu-nama {
+  .nama-menu {
     font-size:13px;
     font-weight:600;
     color:#424242;
@@ -236,55 +217,10 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
     white-space:nowrap;
   }
 
-  .menu-harga {
-    font-size:12px;
-    color:#e65100;
-  }
+  .harga-menu { font-size:12px; color:#e65100; }
+  .keterangan-menu { font-size:11px; color:#999; margin-top:2px; }
 
-  .menu-keterangan {
-    font-size:11px;
-    color:#999;
-    margin-top:2px;
-  }
-
-  /* RESPONSIVE */
-  @media (max-width: 1200px) {
-    .menu-grid {
-      grid-template-columns: repeat(4, 150px);
-    }
-  }
-
-  @media (max-width: 992px) {
-    .konten-utama {
-      margin-left:0;
-      padding:15px;
-    }
-    .layout-penjualan {
-      flex-direction:column;
-    }
-    .col-left {
-      width:100%;
-    }
-    .menu-grid {
-      grid-template-columns: repeat(4, 150px);
-    }
-  }
-
-  @media (max-width: 800px) {
-    .menu-grid {
-      grid-template-columns: repeat(3, 150px);
-    }
-  }
-
-  @media (max-width: 600px) {
-    .menu-grid {
-      grid-template-columns: repeat(2, 150px);
-      justify-content:center;
-    }
-  }
-
-  /* WRAPPER TABEL DI KANAN – biar bisa scroll sendiri */
-  .tabel-wrapper {
+  .bungkus-tabel {
     margin-top:6px;
     border-radius:10px;
     border:1px solid #ffe0b2;
@@ -292,51 +228,23 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
     overflow:hidden;
   }
 
-  .tabel-scroll {
-    max-height:260px;
-    overflow-y:auto;
-  }
+  .gulir-tabel { max-height:260px; overflow-y:auto; }
 
-  /* TABEL */
-  table {
-    width:100%;
-    border-collapse:collapse;
-    font-size:13px;
-  }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
 
   table thead {
-    position:sticky;
-    top:0;
-    z-index:1;
+    position:sticky; top:0; z-index:1;
     background: linear-gradient(90deg, #d32f2f, #ffb300);
     color:#fff;
   }
 
-  table th {
-    padding:8px 8px;
-    text-align:left;
-    font-weight:600;
-    white-space:nowrap;
-  }
+  table th { padding:8px 8px; text-align:left; font-weight:600; white-space:nowrap; }
+  table td { padding:7px 8px; border-bottom:1px solid #ffe0b2; }
+  table tbody tr:nth-child(even) { background:#fffdf7; }
 
-  table td {
-    padding:7px 8px;
-    border-bottom:1px solid #ffe0b2;
-  }
+  .baris-kosong { text-align:center; color:#999; font-style:italic; }
 
-  table tbody tr:nth-child(even) {
-    background:#fffdf7;
-  }
-
-
-  .empty-row {
-    text-align:center;
-    color:#999;
-    font-style:italic;
-  }
-
-  /* BUTTONS */
-  .btn {
+  .tombol {
     display:inline-block;
     padding:7px 14px;
     margin-top:12px;
@@ -349,33 +257,17 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
     font-weight:600;
     letter-spacing:.2px;
   }
+  .tombol:hover { background:#b71c1c; }
 
-  .btn:hover { background:#b71c1c; }
+  .tombol-sekunder { background:#757575; }
+  .tombol-sekunder:hover { background:#555; }
 
-  .btn-secondary {
-    background:#757575;
-  }
+  .tombol-bahaya { background:#e53935; }
+  .tombol-bahaya:hover { background:#c62828; }
 
-  .btn-secondary:hover {
-    background:#555;
-  }
+  .tombol-kecil { padding:4px 8px; font-size:11px; border-radius:999px; }
 
-  .btn-danger {
-    background:#e53935;
-  }
-
-  .btn-danger:hover {
-    background:#c62828;
-  }
-
-  .btn-small {
-    padding:4px 8px;
-    font-size:11px;
-    border-radius:999px;
-  }
-
-  /* JUMLAH */
-  .btn-jumlah {
+  .tombol-jumlah {
     padding:3px 7px;
     border-radius:999px;
     border:none;
@@ -383,19 +275,16 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
     font-size:11px;
     background:#eeeeee;
   }
+  .tombol-jumlah:hover { background:#e0e0e0; }
 
-  .btn-jumlah:hover {
-    background:#e0e0e0;
-  }
-
-  .jumlah-wrapper {
+  .bungkus-jumlah {
     display:flex;
     align-items:center;
     justify-content:flex-end;
     gap:3px;
   }
 
-  .jumlah-input {
+  .input-jumlah {
     width:48px;
     text-align:center;
     border-radius:8px;
@@ -403,15 +292,13 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
     font-size:12px;
     padding:3px 4px;
   }
-
-  .jumlah-input:focus {
+  .input-jumlah:focus {
     outline:none;
     border-color:#fb8c00;
     box-shadow:0 0 0 1px rgba(251,140,0,0.25);
   }
 
-  /* TOTAL & ACTION */
-  .total-box {
+  .kotak-total {
     margin-top:10px;
     padding:10px 12px;
     border-radius:10px;
@@ -425,212 +312,120 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
     color:#bf360c;
   }
 
-  .total-label {
-    font-size:14px;
-    font-weight:600;
-  }
+  .label-total { font-size:14px; font-weight:600; }
+  .nilai-total { font-size:17px; }
 
-  .total-value {
-    font-size:17px;
-  }
-
-  .action-row {
+  .baris-aksi {
     margin-top:10px;
     display:flex;
     gap:8px;
     justify-content:flex-end;
   }
-  /* ========== RESPONSIVE KHUSUS LAYAR KECIL (HP) ========== */
-@media (max-width: 768px) {
-  /* konten full width, tanpa ruang sidebar kiri */
-  .konten-utama {
-    margin-left: 0;
-    margin-top: 60px;
-    padding: 10px 12px;
-    align-items: stretch;
-    justify-content: flex-start;
-  }
 
-  .wrapper-penjualan {
-    max-width: 100%;
-  }
+  @media (max-width: 768px) {
+    .konten-utama {
+      margin-left: 0;
+      margin-top: 60px;
+      padding: 10px 12px;
+      align-items: stretch;
+      justify-content: flex-start;
+    }
 
-  /* urutan sudah menu -> pesanan, tapi kita pastikan column */
-  .layout-penjualan {
-    flex-direction: column;
-    gap: 12px;
-  }
+    .pembungkus-penjualan { max-width: 100%; }
 
-  .col-left,
-  .col-right {
-    width: 100%;
-  }
+    .tata-letak-penjualan { flex-direction: column; gap: 12px; }
 
-  .panel {
-    padding: 12px 12px 14px;
-    border-radius: 12px;
-  }
+    .kolom-kiri, .kolom-kanan { width: 100%; }
 
-  .panel h3 {
-    font-size: 14px;
-  }
+    .kotak { padding: 12px 12px 14px; border-radius: 12px; }
+    .kotak h3 { font-size: 14px; }
 
-  /* GRID MENU DI HP: 2 kolom fleksibel */
-  .menu-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 kolom */
-    gap: 8px;
-    max-height: 260px;         /* lebih pendek supaya tidak terlalu panjang */
-    padding-right: 0;
-  }
+    .kisi-menu {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      max-height: 260px;
+      padding-right: 0;
+    }
 
-  /* kartu menu jangan fixed width/height */
-  .menu-card {
-    width: 100%;
-    height: auto;
-    padding: 8px;
-  }
+    .kartu-menu { width: 100%; height: auto; padding: 8px; }
+    .bungkus-gambar-menu { height: 90px; }
+    .nama-menu { font-size: 12px; white-space: normal; }
 
-  .menu-image-wrap {
-    height: 90px;
-  }
+    table { font-size: 12px; }
+    table th, table td { padding: 6px 6px; }
 
-  .menu-nama {
-    font-size: 12px;
-    white-space: normal;       /* boleh 2 baris */
-  }
+    .gulir-tabel { max-height: 220px; }
+    .bungkus-jumlah { justify-content: center; }
+    .input-jumlah { width: 40px; font-size: 11px; }
 
-  .menu-harga {
-    font-size: 12px;
-  }
+    .kotak-total { padding: 8px 10px; font-size: 13px; }
+    .label-total { font-size: 13px; }
+    .nilai-total { font-size: 15px; }
 
-  .menu-keterangan {
-    font-size: 10px;
+    .tombol { font-size: 12px; padding: 6px 12px; }
   }
-
-  /* TABEL PESANAN DI BAWAH: font sedikit diperkecil */
-  table {
-    font-size: 12px;
-  }
-
-  table th,
-  table td {
-    padding: 6px 6px;
-  }
-
-  .tabel-wrapper {
-    margin-top: 6px;
-  }
-
-  .tabel-scroll {
-    max-height: 220px;         /* biar tidak terlalu tinggi di HP */
-  }
-
-  .jumlah-wrapper {
-    justify-content: center;
-  }
-
-  .jumlah-input {
-    width: 40px;
-    font-size: 11px;
-  }
-
-  .btn-jumlah {
-    font-size: 11px;
-    padding: 3px 6px;
-  }
-
-  /* TOTAL & BUTTONS DI HP */
-  .total-box {
-    flex-direction: row;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 10px;
-    font-size: 13px;
-  }
-
-  .total-label {
-    font-size: 13px;
-  }
-
-  .total-value {
-    font-size: 15px;
-  }
-
-  .action-row {
-    flex-direction: row;
-    justify-content: flex-end;
-    gap: 6px;
-  }
-
-  .btn {
-    font-size: 12px;
-    padding: 6px 12px;
-  }
-}
   </style>
 </head>
 <body>
 <div class="konten-utama">
-  <div class="wrapper-penjualan">
+  <div class="pembungkus-penjualan">
 
-    <?php if ($success_message): ?>
-      <div class="alert alert-success"><?= htmlspecialchars($success_message); ?></div>
+    <?php if ($pesan_sukses): ?>
+      <div class="pemberitahuan pemberitahuan-sukses"><?= htmlspecialchars($pesan_sukses); ?></div>
     <?php endif; ?>
 
-    <?php if ($error_message): ?>
-      <div class="alert alert-error"><?= htmlspecialchars($error_message); ?></div>
+    <?php if ($pesan_gagal): ?>
+      <div class="pemberitahuan pemberitahuan-gagal"><?= htmlspecialchars($pesan_gagal); ?></div>
     <?php endif; ?>
 
-    <!-- FORM KIRIM KE FILE PROSES -->
     <form method="post" id="form-penjualan" action="proses_penjualan.php">
-      <div class="layout-penjualan">
-        <!-- KIRI: DAFTAR MENU (TERPISAH CARD) -->
-        <div class="col-left">
-          <div class="panel">
+      <div class="tata-letak-penjualan">
+        <div class="kolom-kiri">
+          <div class="kotak">
             <h3>Pilih Menu</h3>
             <div style="font-size:12px;color:#777;margin-bottom:4px;">
               Klik menu untuk menambah pesanan. Jumlah bisa diketik atau ditambah dengan klik berulang.
             </div>
 
-            <div class="menu-filters">
-              <input type="text" id="menu-search" class="menu-search" placeholder="Cari menu...">
-              <select id="menu-kategori" class="menu-kategori">
+            <div class="penyaring-menu">
+              <input type="text" id="menu-search" class="cari-menu" placeholder="Cari menu...">
+              <select id="menu-kategori" class="kategori-menu">
                 <option value="">Semua</option>
                 <option value="Makanan">Makanan</option>
                 <option value="Minuman">Minuman</option>
               </select>
             </div>
 
-            <div class="menu-grid" id="menu-grid">
+            <div class="kisi-menu" id="menu-grid">
               <?php foreach ($menus as $m): ?>
-                <div class="menu-card"
-                     data-id="<?= $m['id']; ?>"
+                <div class="kartu-menu"
+                     data-id="<?= (int)$m['id_menu']; ?>"
                      data-nama="<?= htmlspecialchars($m['nama_menu'], ENT_QUOTES); ?>"
-                     data-harga="<?= $m['harga']; ?>"
-                     data-kategori="<?= htmlspecialchars($m['kategori'], ENT_QUOTES); ?>">
-                  <div class="menu-image-wrap">
+                     data-harga="<?= (int)$m['harga']; ?>"
+                     data-kategori="<?= htmlspecialchars($m['jenis'], ENT_QUOTES); ?>">
+                  <div class="bungkus-gambar-menu">
                     <?php if (!empty($m['gambar'])): ?>
                       <img src="../../uploads/menu/<?= htmlspecialchars($m['gambar']); ?>" alt="gambar menu">
                     <?php else: ?>
                       <span>Tidak ada gambar</span>
                     <?php endif; ?>
                   </div>
-                  <div class="menu-nama"><?= htmlspecialchars($m['nama_menu']); ?></div>
-                  <div class="menu-harga">Rp <?= number_format($m['harga'], 0, ',', '.'); ?></div>
-                  <div class="menu-keterangan"><?= htmlspecialchars($m['kategori']); ?> • Klik untuk tambah</div>
+                  <div class="nama-menu"><?= htmlspecialchars($m['nama_menu']); ?></div>
+                  <div class="harga-menu">Rp <?= number_format((int)$m['harga'], 0, ',', '.'); ?></div>
+                  <div class="keterangan-menu"><?= htmlspecialchars($m['jenis']); ?> • Klik untuk tambah</div>
                 </div>
               <?php endforeach; ?>
             </div>
+
           </div>
         </div>
 
-        <!-- KANAN: DAFTAR PESANAN (CARD TERPISAH) -->
-        <div class="col-right">
-          <div class="panel">
+        <div class="kolom-kanan">
+          <div class="kotak">
             <h3>Daftar Pesanan</h3>
 
-            <div class="tabel-wrapper">
-              <div class="tabel-scroll">
+            <div class="bungkus-tabel">
+              <div class="gulir-tabel">
                 <table id="tabel-item">
                   <thead>
                     <tr>
@@ -642,7 +437,7 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
                     </tr>
                   </thead>
                   <tbody>
-                    <tr class="empty-row">
+                    <tr class="baris-kosong">
                       <td colspan="5">Belum ada item. Klik menu di sebelah kiri untuk menambah pesanan.</td>
                     </tr>
                   </tbody>
@@ -650,32 +445,25 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
               </div>
             </div>
 
-            <div class="total-box">
-              <div class="total-label">Total</div>
-              <div class="total-value">Rp <span id="total_display">0</span></div>
+            <div class="kotak-total">
+              <div class="label-total">Total</div>
+              <div class="nilai-total">Rp <span id="total_display">0</span></div>
             </div>
             <input type="hidden" name="total_harga" id="total_harga" value="0">
 
-            <div class="action-row">
-              <button type="button" class="btn btn-secondary" onclick="resetForm()">Reset</button>
-              <button type="submit" class="btn">Simpan Transaksi</button>
+            <div class="baris-aksi">
+              <button type="button" class="tombol tombol-sekunder" onclick="resetForm()">Reset</button>
+              <button type="submit" class="tombol">Simpan Transaksi</button>
             </div>
           </div>
         </div>
       </div>
     </form>
+
   </div>
 </div>
 
 <script>
-/**
- * SCRIPT UNTUK:
- * - klik menu -> tambah ke tabel
- * - atur jumlah +/- 
- * - hitung total
- * - filter menu
- */
-
 let counter = 0;
 
 function findRowByMenuId(idMenu) {
@@ -686,9 +474,8 @@ function formatRupiah(angka) {
   return new Intl.NumberFormat('id-ID').format(angka);
 }
 
-// ================== KLIK KARTU MENU ==================
 document.getElementById('menu-grid').addEventListener('click', function(e) {
-  const card = e.target.closest('.menu-card');
+  const card = e.target.closest('.kartu-menu');
   if (!card) return;
 
   const idMenu   = card.getAttribute('data-id');
@@ -698,27 +485,22 @@ document.getElementById('menu-grid').addEventListener('click', function(e) {
   tambahAtauUpdateItem(idMenu, namaMenu, harga);
 });
 
-/**
- * Tambah item baru atau update jumlah item yang sudah ada
- */
 function tambahAtauUpdateItem(idMenu, namaMenu, harga) {
   const tbody = document.querySelector('#tabel-item tbody');
   const existingRow = findRowByMenuId(idMenu);
 
-  const emptyRow = document.querySelector('#tabel-item tbody .empty-row');
+  const emptyRow = document.querySelector('#tabel-item tbody .baris-kosong');
   if (emptyRow) emptyRow.remove();
 
   if (existingRow) {
-    // Jika menu sudah ada di tabel, cukup tambah jumlah
-    const inputJumlah = existingRow.querySelector('.jumlah-input');
+    const inputJumlah = existingRow.querySelector('.input-jumlah');
     let jumlah = parseInt(inputJumlah.value || 0) + 1;
     inputJumlah.value = jumlah;
 
     const subtotal = harga * jumlah;
     existingRow.querySelector('input[name$="[subtotal]"]').value = subtotal;
-    existingRow.querySelector('.subtotal_text').textContent = formatRupiah(subtotal);
+    existingRow.querySelector('.subtotal-teks').textContent = formatRupiah(subtotal);
   } else {
-    // Jika belum ada, buat baris baru
     const tr = document.createElement('tr');
     tr.setAttribute('data-index', counter);
     tr.setAttribute('data-menu-id', idMenu);
@@ -736,23 +518,23 @@ function tambahAtauUpdateItem(idMenu, namaMenu, harga) {
         Rp ${formatRupiah(harga)}
         <input type="hidden" name="items[${counter}][harga]" value="${harga}">
       </td>
-      <td class="text-right">
-        <div class="jumlah-wrapper">
-          <button type="button" class="btn-jumlah" data-action="minus">-</button>
+      <td class="teks-kanan">
+        <div class="bungkus-jumlah">
+          <button type="button" class="tombol-jumlah" data-action="minus">-</button>
           <input type="number"
                  min="0"
-                 class="jumlah-input"
+                 class="input-jumlah"
                  name="items[${counter}][jumlah]"
                  value="${jumlah}">
-          <button type="button" class="btn-jumlah" data-action="plus">+</button>
+          <button type="button" class="tombol-jumlah" data-action="plus">+</button>
         </div>
       </td>
-      <td class="text-right">
-        Rp <span class="subtotal_text">${formatRupiah(subtotal)}</span>
+      <td class="teks-kanan">
+        Rp <span class="subtotal-teks">${formatRupiah(subtotal)}</span>
         <input type="hidden" name="items[${counter}][subtotal]" value="${subtotal}">
       </td>
-      <td class="text-right">
-        <button type="button" class="btn btn-danger btn-small" data-action="hapus">
+      <td class="teks-kanan">
+        <button type="button" class="tombol tombol-bahaya tombol-kecil" data-action="hapus">
           Hapus
         </button>
       </td>
@@ -765,11 +547,9 @@ function tambahAtauUpdateItem(idMenu, namaMenu, harga) {
   hitungTotal();
 }
 
-// ================== TOMBOL + / - & HAPUS ==================
 document.querySelector('#tabel-item tbody').addEventListener('click', function(e) {
   const btn = e.target;
 
-  // Hapus baris
   if (btn.dataset.action === 'hapus') {
     const row = btn.closest('tr');
     if (row) {
@@ -777,7 +557,7 @@ document.querySelector('#tabel-item tbody').addEventListener('click', function(e
       if (!document.querySelector('#tabel-item tbody tr')) {
         const tbody = document.querySelector('#tabel-item tbody');
         const emptyTr = document.createElement('tr');
-        emptyTr.classList.add('empty-row');
+        emptyTr.classList.add('baris-kosong');
         emptyTr.innerHTML = '<td colspan="5">Belum ada item. Klik menu di sebelah kiri untuk menambah pesanan.</td>';
         tbody.appendChild(emptyTr);
       }
@@ -786,12 +566,11 @@ document.querySelector('#tabel-item tbody').addEventListener('click', function(e
     return;
   }
 
-  // Tombol + / -
-  if (btn.classList.contains('btn-jumlah')) {
-    const wrapper    = btn.closest('.jumlah-wrapper');
-    const row        = btn.closest('tr');
-    const harga      = parseInt(row.querySelector('input[name$="[harga]"]').value || 0);
-    const inputJumlah= wrapper.querySelector('.jumlah-input');
+  if (btn.classList.contains('tombol-jumlah')) {
+    const wrapper     = btn.closest('.bungkus-jumlah');
+    const row         = btn.closest('tr');
+    const harga       = parseInt(row.querySelector('input[name$="[harga]"]').value || 0);
+    const inputJumlah = wrapper.querySelector('.input-jumlah');
 
     let jumlah = parseInt(inputJumlah.value || 0);
     if (btn.dataset.action === 'plus') {
@@ -800,13 +579,12 @@ document.querySelector('#tabel-item tbody').addEventListener('click', function(e
       jumlah--;
     }
 
-    // Jika jumlah <= 0 -> hapus baris
     if (jumlah <= 0 || isNaN(jumlah)) {
       row.remove();
       if (!document.querySelector('#tabel-item tbody tr')) {
         const tbody = document.querySelector('#tabel-item tbody');
         const emptyTr = document.createElement('tr');
-        emptyTr.classList.add('empty-row');
+        emptyTr.classList.add('baris-kosong');
         emptyTr.innerHTML = '<td colspan="5">Belum ada item. Klik menu di sebelah kiri untuk menambah pesanan.</td>';
         tbody.appendChild(emptyTr);
       }
@@ -817,15 +595,14 @@ document.querySelector('#tabel-item tbody').addEventListener('click', function(e
     inputJumlah.value = jumlah;
     const subtotal = harga * jumlah;
     row.querySelector('input[name$="[subtotal]"]').value = subtotal;
-    row.querySelector('.subtotal_text').textContent = formatRupiah(subtotal);
+    row.querySelector('.subtotal-teks').textContent = formatRupiah(subtotal);
 
     hitungTotal();
   }
 });
 
-// ================== EDIT JUMLAH MANUAL ==================
 document.querySelector('#tabel-item tbody').addEventListener('input', function(e) {
-  if (!e.target.classList.contains('jumlah-input')) return;
+  if (!e.target.classList.contains('input-jumlah')) return;
 
   const inputJumlah = e.target;
   const row         = inputJumlah.closest('tr');
@@ -833,9 +610,8 @@ document.querySelector('#tabel-item tbody').addEventListener('input', function(e
 
   let jumlah = parseInt(inputJumlah.value);
 
-  // Saat sedang mengetik dan kosong
   if (inputJumlah.value === '' || isNaN(jumlah)) {
-    row.querySelector('.subtotal_text').textContent = '0';
+    row.querySelector('.subtotal-teks').textContent = '0';
     row.querySelector('input[name$="[subtotal]"]').value = 0;
     hitungTotal();
     return;
@@ -846,14 +622,13 @@ document.querySelector('#tabel-item tbody').addEventListener('input', function(e
 
   const subtotal = harga * jumlah;
   row.querySelector('input[name$="[subtotal]"]').value = subtotal;
-  row.querySelector('.subtotal_text').textContent = formatRupiah(subtotal);
+  row.querySelector('.subtotal-teks').textContent = formatRupiah(subtotal);
 
   hitungTotal();
 });
 
-// Jika blur dan jumlah <= 0 -> hapus baris
 document.querySelector('#tabel-item tbody').addEventListener('blur', function(e) {
-  if (!e.target.classList.contains('jumlah-input')) return;
+  if (!e.target.classList.contains('input-jumlah')) return;
 
   const inputJumlah = e.target;
   const row         = inputJumlah.closest('tr');
@@ -864,7 +639,7 @@ document.querySelector('#tabel-item tbody').addEventListener('blur', function(e)
     if (!document.querySelector('#tabel-item tbody tr')) {
       const tbody = document.querySelector('#tabel-item tbody');
       const emptyTr = document.createElement('tr');
-      emptyTr.classList.add('empty-row');
+      emptyTr.classList.add('baris-kosong');
       emptyTr.innerHTML = '<td colspan="5">Belum ada item. Klik menu di sebelah kiri untuk menambah pesanan.</td>';
       tbody.appendChild(emptyTr);
     }
@@ -872,7 +647,6 @@ document.querySelector('#tabel-item tbody').addEventListener('blur', function(e)
   }
 }, true);
 
-// ================== TOTAL ==================
 function hitungTotal() {
   let total = 0;
   document.querySelectorAll('#tabel-item tbody input[name$="[subtotal]"]').forEach(function (input) {
@@ -883,13 +657,12 @@ function hitungTotal() {
   document.getElementById('total_harga').value = total;
 }
 
-// ================== RESET ==================
 function resetForm() {
   if (confirm('Reset form dan hapus semua item?')) {
     document.getElementById('form-penjualan').reset();
     const tbody = document.querySelector('#tabel-item tbody');
     tbody.innerHTML = `
-      <tr class="empty-row">
+      <tr class="baris-kosong">
         <td colspan="5">Belum ada item. Klik menu di sebelah kiri untuk menambah pesanan.</td>
       </tr>
     `;
@@ -899,12 +672,11 @@ function resetForm() {
   }
 }
 
-// ================== FILTER MENU (SEARCH + KATEGORI) ==================
 function filterMenu() {
   const keyword  = document.getElementById('menu-search').value.toLowerCase();
   const kategori = document.getElementById('menu-kategori').value;
 
-  document.querySelectorAll('.menu-card').forEach(function(card) {
+  document.querySelectorAll('.kartu-menu').forEach(function(card) {
     const namaCard = card.getAttribute('data-nama').toLowerCase();
     const katCard  = card.getAttribute('data-kategori');
 

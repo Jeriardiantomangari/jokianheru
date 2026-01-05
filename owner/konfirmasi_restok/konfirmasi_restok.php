@@ -2,12 +2,13 @@
 session_start();
 include '../../koneksi/sidebarowner.php'; 
 include '../../koneksi/koneksi.php'; 
-
+ 
 if (!isset($_SESSION['role']) || $_SESSION['role'] != 'owner') {
     header("Location: ../../index.php");
     exit;
 }
 ?>
+
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -34,7 +35,6 @@ body {
   letter-spacing:.5px;
 }
 
-/* TOMBOL */
 .tombol { 
   border:none; 
   border-radius:6px; 
@@ -67,7 +67,6 @@ body {
   padding:5px 10px;
 }
 
-/* tombol hapus */
 .tombol-hapus {
   background:#c62828;
   padding:5px 10px;
@@ -78,7 +77,6 @@ body {
   color:#fff;
 }
 
-/* TABEL */
 .tabel-ajukan { 
   width:100%; 
   border-collapse:collapse; 
@@ -89,7 +87,6 @@ body {
   table-layout:fixed; 
 }
 
-/* DataTables controls */
 .dataTables_wrapper .dataTables_filter input,
 .dataTables_wrapper .dataTables_length select { 
   padding:6px 10px; 
@@ -201,64 +198,67 @@ body {
 <div class="konten-utama">
   <h2>Konfirmasi Restok </h2>
 
-  <table id="tabel-ajukan-gudang" class="tabel-ajukan">
-    <thead>
-      <tr>
-        <th>No.</th>
-        <th>Tanggal</th>
-        <th>Nama Barang</th>
-        <th>Harga Satuan</th>
-        <th>Jumlah Restok</th>
-        <th>Total Harga</th>
-        <th>Status</th>
-        <th>Aksi</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php
+ <table id="tabel-ajukan-gudang" class="tabel-ajukan">
+  <thead>
+    <tr>
+      <th>No.</th>
+      <th>Nama Barang</th>
+      <th>Harga Satuan</th>
+      <th>Jumlah Restok</th>
+      <th>Total Harga</th>
+      <th>Barang Masuk</th>
+      <th>Status</th>
+      <th>Aksi</th>
+    </tr>
+  </thead>
+  <tbody>
+    <?php
       $no = 1;
+
       $sql = "
-        SELECT *
-        FROM ajukan_stok
-        ORDER BY id DESC
+        SELECT 
+          r.*,
+          COALESCE(SUM(bm.Barang_masuk), 0) AS barang_masuk
+        FROM restok_barang r
+        LEFT JOIN barang_masuk bm ON bm.Id_restok_barang = r.Id_restok_barang
+        GROUP BY r.Id_restok_barang
+        ORDER BY r.Id_restok_barang DESC
       ";
+
       $q = mysqli_query($conn, $sql);
       while($row = mysqli_fetch_assoc($q)) {
-        $tgl = '-';
-        if (!empty($row['created_at'])) {
-          $tgl = date('d-m-Y H:i', strtotime($row['created_at']));
-        }
-      ?>
-      <tr>
-        <td><?= $no++; ?></td>
-        <td><?= $tgl; ?></td>
-        <td><?= htmlspecialchars($row['nama_barang']); ?></td>
-        <td>Rp <?= number_format($row['harga'],2,',','.'); ?></td>
-        <td><?= (int)$row['jumlah_restok']; ?></td>
-        <td>Rp <?= number_format($row['total_harga'],2,',','.'); ?></td>
-        <td><?= htmlspecialchars($row['status']); ?></td>
-        <td>
-          <?php if ($row['status'] === 'Menunggu'): ?>
-            <button class="tombol tombol-setuju" onclick="setujui(<?= $row['id']; ?>)">
-              <i class="fa-solid fa-check"></i> Setujui
-            </button>
-            <button class="tombol tombol-tolak" onclick="tolak(<?= $row['id']; ?>)">
-              <i class="fa-solid fa-xmark"></i> Tolak
-            </button>
+        $bm = (int)$row['barang_masuk'];
+    ?>
+    <tr>
+      <td data-label="No"><?= $no++; ?></td>
+      <td data-label="Nama Barang"><?= htmlspecialchars($row['Nama_barang']); ?></td>
+      <td data-label="Harga Satuan">Rp <?= number_format((float)$row['Harga'], 2, ',', '.'); ?></td>
+      <td data-label="Jumlah Restok"><?= (int)$row['Jumlah_restok']; ?></td>
+      <td data-label="Total Harga">Rp <?= number_format((float)$row['Total_harga'], 2, ',', '.'); ?></td>
+      <td data-label="Barang Masuk"><?= ($bm > 0) ? $bm : '-'; ?></td>
+      <td data-label="Status"><?= htmlspecialchars($row['Status']); ?></td>
+      <td data-label="Aksi">
+        <?php if ($row['Status'] === 'Menunggu'): ?>
+          <button class="tombol tombol-setuju" onclick="setujui(<?= (int)$row['Id_restok_barang']; ?>)">
+            <i class="fa-solid fa-check"></i> Setujui
+          </button>
+          <button class="tombol tombol-tolak" onclick="tolak(<?= (int)$row['Id_restok_barang']; ?>)">
+            <i class="fa-solid fa-xmark"></i> Tolak
+          </button>
 
-          <?php elseif ($row['status'] === 'Selesai'): ?>
-            <button class="tombol tombol-hapus" onclick="hapus(<?= $row['id']; ?>)">
-              <i class="fa-solid fa-trash"></i> Hapus
-            </button>
+        <?php elseif ($row['Status'] === 'Selesai'): ?>
+          <button class="tombol tombol-hapus" onclick="hapus(<?= (int)$row['Id_restok_barang']; ?>)">
+            <i class="fa-solid fa-trash"></i> Hapus
+          </button>
 
-          <?php else: ?>
-            -
-          <?php endif; ?>
-        </td>
-      </tr>
-      <?php } ?>
-    </tbody>
-  </table>
+        <?php else: ?>
+          -
+        <?php endif; ?>
+      </td>
+    </tr>
+    <?php } ?>
+  </tbody>
+</table>
 </div>
 
 <script>

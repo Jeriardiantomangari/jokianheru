@@ -224,17 +224,12 @@ $halaman = basename($_SERVER['PHP_SELF']);
     </div>
 
     <div class="daftar-menu">
-      <!-- STOK BARANG -->
       <a href="../stok_barang/stok_barang.php" class="<?= $halaman == 'stok_barang.php' ? 'active' : '' ?>">
         <i class="fa-solid fa-boxes-stacked"></i> Stok Barang
       </a>
-
-      <!-- PENGAJUAN RESTOK -->
       <a href="../pengajuan_restok/pengajuan_restok.php" class="<?= $halaman == 'pengajuan_restok.php' ? 'active' : '' ?>">
         <i class="fa-solid fa-cart-arrow-down"></i> Pengajuan Restok
       </a>
-
-      <!-- KONFIRMASI RESTOK -->
       <a href="../konfirmasi_restok/konfirmasi_restok.php" class="<?= $halaman == 'konfirmasi_restok.php' ? 'active' : '' ?>">
         <i class="fa-solid fa-clipboard-check"></i> Konfirmasi Restok
       </a>
@@ -245,7 +240,6 @@ $halaman = basename($_SERVER['PHP_SELF']);
     </button>
   </div>
 
-  <!-- MENU ATAS  -->
   <div class="menu-atas">
     <i class="fa-solid fa-bars tombol-menu" id="tombolMenu"></i>
     <div class="welcome-text">
