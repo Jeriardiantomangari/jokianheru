@@ -19,12 +19,14 @@ $qOutlet = $koneksi->query("SELECT id_outlet, nama_outlet FROM outlet ORDER BY n
 if ($qOutlet) {
     while ($rowO = $qOutlet->fetch_assoc()) $outlets[] = $rowO;
 }
+
 $sqlLaporan = "
     SELECT
         COALESCE(o.nama_outlet, '(Belum terhubung)') AS nama_outlet,
         b.nama_barang,
         k.nama_kategori AS nama_kategori,
         b.harga,
+        b.minimal_stok_outlet,
         COALESCE(sg.Jumlah_stok, 0) AS stok_gudang,
         COALESCE(so.Jumlah_stok, 0) AS stok_outlet
     FROM stok_outlet so
@@ -84,23 +86,29 @@ $stmtLap->close();
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
+<!-- Chart.js untuk grafik -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
 body{
-margin:0;
-font-family:Arial,sans-serif;
-background: radial-gradient(circle at top left,#fff7e0 0%,#ffe3b3 40%,#ffffff 100%);}
+  margin:0;
+  font-family:Arial,sans-serif;
+  background: radial-gradient(circle at top left,#fff7e0 0%,#ffe3b3 40%,#ffffff 100%);
+}
 
 .konten-utama{
   margin-left:250px;
   margin-top:60px;
   padding:30px;
-  min-height:calc(100vh - 60px);}
-  
+  min-height:calc(100vh - 60px);
+}
+
 .konten-utama h2{
   margin-bottom:20px;
   color:#b71c1c;
   font-weight:700;
-  letter-spacing:.5px;}
+  letter-spacing:.5px;
+}
 
 .tabel-ajukan{
   width:100%;
@@ -109,7 +117,8 @@ background: radial-gradient(circle at top left,#fff7e0 0%,#ffe3b3 40%,#ffffff 10
   border-radius:12px;
   overflow:hidden;
   box-shadow:0 3px 10px rgba(0,0,0,0.12);
-  table-layout:fixed;}
+  table-layout:fixed;
+}
 
 .dataTables_wrapper .dataTables_filter input,
 .dataTables_wrapper .dataTables_length select{
@@ -118,54 +127,104 @@ background: radial-gradient(circle at top left,#fff7e0 0%,#ffe3b3 40%,#ffffff 10
   border:1px solid #ffcc80;
   font-size:14px;
   margin-bottom:8px;
-  outline:none;}
+  outline:none;
+}
 
 .tabel-ajukan thead tr{
-  background: linear-gradient(90deg, #d32f2f, #ffb300);}
+  background: linear-gradient(90deg, #d32f2f, #ffb300);
+}
 
 .tabel-ajukan th{
   color:#ffffff;
   text-align:left;
   padding:12px 15px;
   font-weight:600;
-  font-size:14px;}
+  font-size:14px;
+}
 
 .tabel-ajukan td{
   padding:10px 15px;
   border-bottom:1px solid #ffe0b2;
   border-right:1px solid #fff3e0;
   font-size:13px;
-  color:#424242;}
+  color:#424242;
+}
 
 .tabel-ajukan tr:nth-child(even){
-  background:#fffdf7;}
+  background:#fffdf7;
+}
+
+/* BOX GRAFIK */
+.kotak_grafik{
+  margin-top:20px;
+  margin-bottom:20px;
+  background:#fff;
+  border-radius:12px;
+  padding:18px;
+  box-shadow:0 3px 10px rgba(0,0,0,0.12);
+}
+.judul_grafik{
+  font-weight:700;
+  color:#b71c1c;
+  margin:0 0 10px 0;
+  font-size:14px;
+}
+
+/* ===== LEGEND WARNA STOK ===== */
+.keterangan{
+  display:flex;
+  gap:20px;
+  margin-top:12px;
+  justify-content:flex-start;
+  align-items:center;
+  flex-wrap:wrap;
+  font-size:13px;
+  color:#444;
+}
+
+.keterangan_warnah{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.warnah{
+  width:14px;
+  height:14px;
+  border-radius:4px;
+  display:inline-block;
+}
+
+.warnah.merah{ background:#f44336; }
+.warnah.kuning{ background:#ffc107; }
+.warnah.hijau{ background:#4caf50; }
 
 @media screen and (max-width: 768px) {
   .konten-utama{
     margin-left:0;
     padding:20px;
     width:100%;
-    text-align:center;}
+    text-align:center;
+  }
 
-  .tabel-ajukan, thead, tbody, th, td, tr {
-    display:block;}
-
-  thead tr{
-    display:none;}
+  .tabel-ajukan, thead, tbody, th, td, tr { display:block; }
+  thead tr{ display:none; }
 
   tr{
     margin-bottom:15px;
     border-bottom:2px solid #d32f2f;
     border-radius:10px;
     overflow:hidden;
-    background:#fff;}
+    background:#fff;
+  }
 
   td{
     text-align:right;
     padding-left:50%;
     position:relative;
     border-right:none;
-    border-bottom:1px solid #ffe0b2;}
+    border-bottom:1px solid #ffe0b2;
+  }
 
   td::before{
     content:attr(data-label);
@@ -174,21 +233,25 @@ background: radial-gradient(circle at top left,#fff7e0 0%,#ffe3b3 40%,#ffffff 10
     width:45%;
     font-weight:600;
     text-align:left;
-    color:#b71c1c;}
+    color:#b71c1c;
+  }
 
   form{
     width:100%;
     display:flex;
-    justify-content:center !important;}
+    justify-content:center !important;
+  }
 
   form div{
     width:100%;
-    text-align:center;}
+    text-align:center;
+  }
 
   form select{
     width:70%;
     margin:0 auto;
-    display:block;}
+    display:block;
+  }
 }
 </style>
 
@@ -235,10 +298,36 @@ background: radial-gradient(circle at top left,#fff7e0 0%,#ffe3b3 40%,#ffffff 10
       <?php endforeach; ?>
     </tbody>
   </table>
+
+  <!-- GRAFIK STOK OUTLET -->
+  <div class="kotak_grafik">
+    <div class="judul_grafik">Grafik Stok Outlet (per Barang)</div>
+    <canvas id="stokChart" height="110"></canvas>
+
+    <div class="keterangan">
+      <div class="keterangan_warnah"><span class="warnah merah"></span> Kurang</div>
+      <div class="keterangan_warnah"><span class="warnah kuning"></span> Sedang</div>
+      <div class="keterangan_warnah"><span class="warnah hijau"></span> Banyak</div>
+    </div>
+  </div>
+
+  <!-- GRAFIK STOK GUDANG (DITAMBAHKAN SESUAI PERMINTAAN) -->
+  <div class="kotak_grafik">
+    <div class="judul_grafik">Grafik Stok Gudang (per Barang)</div>
+    <canvas id="gudangChart" height="110"></canvas>
+
+    <div class="keterangan">
+      <div class="keterangan_warnah"><span class="warnah merah"></span> Kurang</div>
+      <div class="keterangan_warnah"><span class="warnah kuning"></span> Sedang</div>
+      <div class="keterangan_warnah"><span class="warnah hijau"></span> Banyak</div>
+    </div>
+  </div>
+
 </div>
 
 <script>
 $(document).ready(function () {
+  // ===== DATATABLES =====
   $('#tabel-stok-outlet').DataTable({
     pageLength: 10,
     lengthMenu: [5, 10, 25, 50],
@@ -255,5 +344,157 @@ $(document).ready(function () {
       paginate: { first: "Pertama", last: "Terakhir", next: "Berikutnya", previous: "Sebelumnya" }
     }
   });
+
+  // ===== DATA DARI PHP =====
+  const rawRows = <?=
+    json_encode($rows, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  ?>;
+
+  // ===== WARNA SESUAI LEVEL STOK =====
+  function pickColor(stok, min) {
+    if (min <= 0) {
+      if (stok <= 0) return 'rgba(244, 67, 54, 0.85)';
+      if (stok < 10) return 'rgba(255, 193, 7, 0.85)';
+      return 'rgba(76, 175, 80, 0.85)';
+    }
+    if (stok < min) return 'rgba(244, 67, 54, 0.85)';
+    if (stok < (min * 2)) return 'rgba(255, 193, 7, 0.85)';
+    return 'rgba(76, 175, 80, 0.85)';
+  }
+
+  const outletSet = new Set();
+  const barangSet = new Set();
+
+  rawRows.forEach(r => {
+    outletSet.add((r.nama_outlet ?? '(Belum terhubung)').toString());
+    barangSet.add((r.nama_barang ?? '').toString());
+  });
+
+  const outletLabels = Array.from(outletSet);
+  const barangLabels = Array.from(barangSet);
+
+  const dataMap = {};
+  outletLabels.forEach(o => dataMap[o] = {});
+
+  rawRows.forEach(r => {
+    const outlet = (r.nama_outlet ?? '(Belum terhubung)').toString();
+    const barang = (r.nama_barang ?? '').toString();
+    const stokO  = parseInt(r.stok_outlet ?? 0, 10) || 0;
+    const min    = parseInt(r.minimal_stok_outlet ?? 0, 10) || 0;
+
+    if (!dataMap[outlet][barang]) {
+      dataMap[outlet][barang] = { stok: 0, min: min };
+    }
+    dataMap[outlet][barang].stok += stokO;
+    if (min > dataMap[outlet][barang].min) dataMap[outlet][barang].min = min;
+  });
+
+  const datasets = barangLabels.map(barang => {
+    const data = outletLabels.map(outlet => {
+      const cell = dataMap[outlet][barang];
+      return cell ? cell.stok : 0;
+    });
+
+    const bgColors = outletLabels.map(outlet => {
+      const cell = dataMap[outlet][barang];
+      const stok = cell ? cell.stok : 0;
+      const min  = cell ? cell.min  : 0;
+      return pickColor(stok, min);
+    });
+
+    return {
+      label: barang,
+      data: data,
+      backgroundColor: bgColors,
+      borderWidth: 0
+    };
+  });
+
+  // ===== CHART STOK OUTLET =====
+  const canvas = document.getElementById('stokChart');
+  if (canvas) {
+    new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: outletLabels,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const outlet = context.label;
+                const barang = context.dataset.label;
+                const stok   = context.parsed.y;
+                const cell = (dataMap[outlet] && dataMap[outlet][barang]) ? dataMap[outlet][barang] : null;
+                const min  = cell ? cell.min : 0;
+                return `${barang} | Stok: ${stok} | Minimal: ${min}`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: { beginAtZero: true, ticks: { precision: 0 } }
+        }
+      }
+    });
+  }
+
+  // ===== CHART STOK GUDANG  =====
+
+  const gudangMap = {};
+  rawRows.forEach(r => {
+    const barang = (r.nama_barang ?? '').toString();
+    const stokG  = parseInt(r.stok_gudang ?? 0, 10) || 0;
+    const min    = parseInt(r.minimal_stok_outlet ?? 0, 10) || 0;
+
+    if (!gudangMap[barang]) {
+      gudangMap[barang] = { stok: 0, min: min };
+    }
+    gudangMap[barang].stok = Math.max(gudangMap[barang].stok, stokG);
+    if (min > gudangMap[barang].min) gudangMap[barang].min = min;
+  });
+
+  const gudangLabels = Object.keys(gudangMap);
+  const gudangValues = gudangLabels.map(b => gudangMap[b].stok);
+  const gudangColors = gudangLabels.map(b => pickColor(gudangMap[b].stok, gudangMap[b].min));
+
+  const canvasGudang = document.getElementById('gudangChart');
+  if (canvasGudang) {
+    new Chart(canvasGudang, {
+      type: 'bar',
+      data: {
+        labels: gudangLabels,
+        datasets: [{
+          data: gudangValues,
+          backgroundColor: gudangColors,
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const barang = context.label;
+                const stok   = context.parsed.y;
+                const min    = gudangMap[barang].min;
+                return `Stok Gudang: ${stok} | Minimal: ${min}`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: { beginAtZero: true, ticks: { precision: 0 } }
+        }
+      }
+    });
+  }
+
 });
 </script>

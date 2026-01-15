@@ -167,6 +167,10 @@ body {
   color:#b71c1c; 
   font-size:18px; }
 
+  #modalKonfirmasi .isi-modal {
+  text-align: left;       /* ubah konten jadi rata kiri */
+}
+
 .isi-modal input, .isi-modal select{ 
   width:100%; 
   padding:10px; 

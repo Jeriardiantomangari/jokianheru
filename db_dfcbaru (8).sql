@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Waktu pembuatan: 04 Jan 2026 pada 12.32
+-- Waktu pembuatan: 15 Jan 2026 pada 04.40
 -- Versi server: 8.4.3
 -- Versi PHP: 8.3.26
 
@@ -30,9 +30,9 @@ SET time_zone = "+00:00";
 CREATE TABLE `akun` (
   `id_akun` int NOT NULL,
   `id_outlet` int DEFAULT NULL,
-  `nama` varchar(100) NOT NULL,
-  `username` varchar(50) NOT NULL,
-  `password` varchar(100) NOT NULL,
+  `nama` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `username` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `password` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `role` enum('admin','kasir','owner','gudang') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -71,7 +71,9 @@ INSERT INTO `bahan_masuk` (`Id_bahan_masuk`, `Id_restok_bahan`, `Nama_barang`, `
 (7, 8, 'ikan', 120, 120),
 (8, 10, 'ikan', 250, 250),
 (9, 9, 'garam', 5, 5),
-(13, 14, 'ayam', 1, 1);
+(13, 14, 'ayam', 1, 1),
+(14, 15, 'ayam', 2, 2),
+(15, 16, 'ayam', 33, 33);
 
 -- --------------------------------------------------------
 
@@ -82,8 +84,8 @@ INSERT INTO `bahan_masuk` (`Id_bahan_masuk`, `Id_restok_bahan`, `Nama_barang`, `
 CREATE TABLE `barang` (
   `id_barang` int NOT NULL,
   `id_kategori` int NOT NULL,
-  `nama_barang` varchar(100) NOT NULL,
-  `kategori` varchar(50) NOT NULL,
+  `nama_barang` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `kategori` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `harga` int NOT NULL,
   `minimal_stok_gudang` int NOT NULL,
   `minimal_stok_outlet` int NOT NULL
@@ -118,8 +120,7 @@ CREATE TABLE `barang_masuk` (
 --
 
 INSERT INTO `barang_masuk` (`Id_barang_masuk`, `Id_restok_barang`, `Nama_barang`, `Harga`, `Jumlah_restok`, `Barang_masuk`) VALUES
-(11, 59, 'garam', NULL, 10, 10),
-(12, 58, 'garam', NULL, 30, 30);
+(13, 60, 'garam', NULL, 300, 30);
 
 -- --------------------------------------------------------
 
@@ -145,7 +146,8 @@ INSERT INTO `detail_penjualan` (`Id_detail_penjualan`, `id_penjualan`, `id_menu`
 (3, 3, 1, 'nasi ayam ', 15000.00, 2, 30000.00),
 (4, 4, 1, 'nasi ayam ', 15000.00, 1, 15000.00),
 (5, 5, 1, 'nasi ayam ', 15000.00, 1, 15000.00),
-(6, 6, 1, 'nasi ayam ', 15000.00, 3, 45000.00);
+(6, 6, 1, 'nasi ayam ', 15000.00, 3, 45000.00),
+(7, 7, 1, 'nasi ayam ', 15000.00, 55, 825000.00);
 
 -- --------------------------------------------------------
 
@@ -155,7 +157,7 @@ INSERT INTO `detail_penjualan` (`Id_detail_penjualan`, `id_penjualan`, `id_menu`
 
 CREATE TABLE `kategori` (
   `id_kategori` int NOT NULL,
-  `nama_kategori` varchar(100) NOT NULL
+  `nama_kategori` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -173,7 +175,7 @@ INSERT INTO `kategori` (`id_kategori`, `nama_kategori`) VALUES
 
 CREATE TABLE `menu` (
   `id_menu` int NOT NULL,
-  `nama_menu` varchar(100) NOT NULL,
+  `nama_menu` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `jenis` enum('Makanan','Minuman') NOT NULL,
   `harga` int NOT NULL,
   `gambar` varchar(255) DEFAULT NULL
@@ -194,8 +196,8 @@ INSERT INTO `menu` (`id_menu`, `nama_menu`, `jenis`, `harga`, `gambar`) VALUES
 
 CREATE TABLE `outlet` (
   `id_outlet` int NOT NULL,
-  `nama_outlet` varchar(100) NOT NULL,
-  `alamat` text NOT NULL
+  `nama_outlet` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `alamat` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -228,7 +230,8 @@ INSERT INTO `penjualan` (`id_penjualan`, `id_outlet`, `id_kasir`, `tanggal`, `to
 (3, 1, 9, '2026-01-03 05:12:13', 30000),
 (4, 1, 9, '2026-01-03 06:02:19', 15000),
 (5, 5, 10, '2026-01-03 13:49:50', 15000),
-(6, 5, 10, '2026-01-03 13:58:41', 45000);
+(6, 5, 10, '2026-01-03 13:58:41', 45000),
+(7, 5, 10, '2026-01-04 12:52:15', 825000);
 
 -- --------------------------------------------------------
 
@@ -255,7 +258,10 @@ INSERT INTO `restok_bahan_outlet` (`Id_restok_bahan`, `Id_outlet`, `Id_stok_outl
 (8, 1, 4, 'ikan', 120, 'Selesai'),
 (9, 1, 5, 'garam', 5, 'Selesai'),
 (10, 1, 4, 'ikan', 250, 'Selesai'),
-(14, 1, 3, 'ayam', 1, 'Selesai');
+(14, 1, 3, 'ayam', 1, 'Selesai'),
+(15, 5, 6, 'ayam', 2, 'Selesai'),
+(16, 1, 3, 'ayam', 33, 'Selesai'),
+(17, 1, 5, 'garam', 3, 'Dikirim');
 
 -- --------------------------------------------------------
 
@@ -266,7 +272,7 @@ INSERT INTO `restok_bahan_outlet` (`Id_restok_bahan`, `Id_outlet`, `Id_stok_outl
 CREATE TABLE `restok_barang` (
   `Id_restok_barang` int NOT NULL,
   `Id_stok_gudang` int NOT NULL,
-  `Nama_barang` varchar(100) DEFAULT NULL,
+  `Nama_barang` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `Harga` decimal(10,2) DEFAULT NULL,
   `Jumlah_restok` int DEFAULT NULL,
   `Total_harga` decimal(10,2) DEFAULT NULL,
@@ -278,8 +284,8 @@ CREATE TABLE `restok_barang` (
 --
 
 INSERT INTO `restok_barang` (`Id_restok_barang`, `Id_stok_gudang`, `Nama_barang`, `Harga`, `Jumlah_restok`, `Total_harga`, `Status`) VALUES
-(58, 6, 'garam', 3000.00, 30, 90000.00, 'Selesai'),
-(59, 6, 'garam', 3000.00, 10, 30000.00, 'Selesai');
+(60, 6, 'garam', 3000.00, 300, 900000.00, 'Selesai'),
+(61, 5, 'ayam', 100000.00, 3, 300000.00, 'Menunggu');
 
 -- --------------------------------------------------------
 
@@ -290,8 +296,8 @@ INSERT INTO `restok_barang` (`Id_restok_barang`, `Id_stok_gudang`, `Nama_barang`
 CREATE TABLE `stok_gudang` (
   `Id_stok_gudang` int NOT NULL,
   `id_barang` int NOT NULL,
-  `Nama_barang` varchar(100) DEFAULT NULL,
-  `Kategori` varchar(50) DEFAULT NULL,
+  `Nama_barang` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `Kategori` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `Jumlah_stok` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -301,8 +307,8 @@ CREATE TABLE `stok_gudang` (
 
 INSERT INTO `stok_gudang` (`Id_stok_gudang`, `id_barang`, `Nama_barang`, `Kategori`, `Jumlah_stok`) VALUES
 (4, 4, 'ikan', '1', 56),
-(5, 1, 'ayam', '1', 816),
-(6, 5, 'garam', '1', 35);
+(5, 1, 'ayam', '1', 781),
+(6, 5, 'garam', '1', 62);
 
 -- --------------------------------------------------------
 
@@ -314,9 +320,8 @@ CREATE TABLE `stok_outlet` (
   `Id_stok_outlet` int NOT NULL,
   `id_outlet` int NOT NULL,
   `id_barang` int NOT NULL,
-  `id_bahan_masuk` int NOT NULL,
-  `Nama_barang` varchar(100) DEFAULT NULL,
-  `Kategori` varchar(50) DEFAULT NULL,
+  `Nama_barang` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `Kategori` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `Jumlah_stok` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -324,10 +329,11 @@ CREATE TABLE `stok_outlet` (
 -- Dumping data untuk tabel `stok_outlet`
 --
 
-INSERT INTO `stok_outlet` (`Id_stok_outlet`, `id_outlet`, `id_barang`, `id_bahan_masuk`, `Nama_barang`, `Kategori`, `Jumlah_stok`) VALUES
-(3, 1, 1, 9, 'ayam', '1', 131),
-(4, 1, 4, 9, 'ikan', '1', 331),
-(5, 1, 5, 9, 'garam', '1', 5);
+INSERT INTO `stok_outlet` (`Id_stok_outlet`, `id_outlet`, `id_barang`, `Nama_barang`, `Kategori`, `Jumlah_stok`) VALUES
+(3, 1, 1, 'ayam', '1', 64),
+(4, 1, 4, 'ikan', '1', 330),
+(5, 1, 5, 'garam', '1', 5),
+(6, 5, 1, 'ayam', '1', 0);
 
 --
 -- Indeks untuk tabel yang dibuang
@@ -423,7 +429,6 @@ ALTER TABLE `stok_gudang`
 ALTER TABLE `stok_outlet`
   ADD PRIMARY KEY (`Id_stok_outlet`),
   ADD KEY `Id_barang` (`id_barang`),
-  ADD KEY `stok_outlet_ibfk_2` (`id_bahan_masuk`),
   ADD KEY `id_outlet` (`id_outlet`);
 
 --
@@ -440,7 +445,7 @@ ALTER TABLE `akun`
 -- AUTO_INCREMENT untuk tabel `bahan_masuk`
 --
 ALTER TABLE `bahan_masuk`
-  MODIFY `Id_bahan_masuk` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `Id_bahan_masuk` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT untuk tabel `barang`
@@ -452,13 +457,13 @@ ALTER TABLE `barang`
 -- AUTO_INCREMENT untuk tabel `barang_masuk`
 --
 ALTER TABLE `barang_masuk`
-  MODIFY `Id_barang_masuk` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `Id_barang_masuk` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT untuk tabel `detail_penjualan`
 --
 ALTER TABLE `detail_penjualan`
-  MODIFY `Id_detail_penjualan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `Id_detail_penjualan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT untuk tabel `kategori`
@@ -482,19 +487,19 @@ ALTER TABLE `outlet`
 -- AUTO_INCREMENT untuk tabel `penjualan`
 --
 ALTER TABLE `penjualan`
-  MODIFY `id_penjualan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id_penjualan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT untuk tabel `restok_bahan_outlet`
 --
 ALTER TABLE `restok_bahan_outlet`
-  MODIFY `Id_restok_bahan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `Id_restok_bahan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT untuk tabel `restok_barang`
 --
 ALTER TABLE `restok_barang`
-  MODIFY `Id_restok_barang` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
+  MODIFY `Id_restok_barang` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
 
 --
 -- AUTO_INCREMENT untuk tabel `stok_gudang`
@@ -506,7 +511,7 @@ ALTER TABLE `stok_gudang`
 -- AUTO_INCREMENT untuk tabel `stok_outlet`
 --
 ALTER TABLE `stok_outlet`
-  MODIFY `Id_stok_outlet` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `Id_stok_outlet` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
@@ -569,8 +574,7 @@ ALTER TABLE `stok_gudang`
 --
 ALTER TABLE `stok_outlet`
   ADD CONSTRAINT `fk_stok_outlet_outlet` FOREIGN KEY (`id_outlet`) REFERENCES `outlet` (`id_outlet`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  ADD CONSTRAINT `stok_outlet_ibfk_1` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`),
-  ADD CONSTRAINT `stok_outlet_ibfk_2` FOREIGN KEY (`id_bahan_masuk`) REFERENCES `bahan_masuk` (`Id_bahan_masuk`);
+  ADD CONSTRAINT `stok_outlet_ibfk_1` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
