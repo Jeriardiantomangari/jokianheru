@@ -168,7 +168,7 @@ body {
   font-size:18px; }
 
   #modalKonfirmasi .isi-modal {
-  text-align: left;       /* ubah konten jadi rata kiri */
+  text-align: left;      
 }
 
 .isi-modal input, .isi-modal select{ 

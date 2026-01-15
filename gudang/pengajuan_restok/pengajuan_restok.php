@@ -207,6 +207,10 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'gudang') {
   box-shadow:0 0 0 2px rgba(251,140,0,0.18);
 }
 
+#modalKonfirmasi .isi-modal {
+  text-align: left;      
+}
+
 .isi-modal button { 
   width:100%; 
   padding:10px; 
