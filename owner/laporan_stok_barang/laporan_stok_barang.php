@@ -13,13 +13,18 @@ if (!isset($koneksi) && isset($conn)) {
 
 $id_outlet_filter = $_GET['id_outlet'] ?? 'all';
 
-// ====== AMBIL DATA OUTLET UNTUK FILTER ======
+/* =========================
+   AMBIL DATA OUTLET UNTUK FILTER
+========================= */
 $outlets = [];
 $qOutlet = $koneksi->query("SELECT id_outlet, nama_outlet FROM outlet ORDER BY nama_outlet");
 if ($qOutlet) {
     while ($rowO = $qOutlet->fetch_assoc()) $outlets[] = $rowO;
 }
 
+/* =========================
+   LAPORAN STOK BARANG PER OUTLET
+========================= */
 $sqlLaporan = "
     SELECT
         COALESCE(o.nama_outlet, '(Belum terhubung)') AS nama_outlet,
@@ -80,13 +85,62 @@ while ($r = $resultLap->fetch_assoc()) {
     $rows[] = $r;
 }
 $stmtLap->close();
+
+/* =========================
+   (A) MONITORING RESTOK OUTLET -> GUDANG
+   sumber: restok_bahan_outlet
+========================= */
+$sqlRestok = "
+  SELECT
+    r.Id_restok_bahan,
+    r.Id_outlet,
+    COALESCE(o.nama_outlet, '(Outlet tidak diketahui)') AS nama_outlet,
+    r.Id_stok_outlet,
+    COALESCE(so.Nama_barang, r.Nama_barang) AS nama_barang,
+    r.Jumlah_restok,
+    r.Status
+  FROM restok_bahan_outlet r
+  LEFT JOIN outlet o
+    ON o.id_outlet = r.Id_outlet
+  LEFT JOIN stok_outlet so
+    ON so.Id_stok_outlet = r.Id_stok_outlet
+  WHERE 1=1
+";
+
+$paramsR = [];
+$typesR  = "";
+
+if ($id_outlet_filter !== 'all') {
+  $sqlRestok .= " AND r.Id_outlet = ? ";
+  $paramsR[] = (int)$id_outlet_filter;
+  $typesR   .= "i";
+}
+
+$sqlRestok .= " ORDER BY r.Id_restok_bahan DESC";
+
+$stmtR = $koneksi->prepare($sqlRestok);
+if (!$stmtR) {
+  die("Gagal prepare monitoring restok: " . $koneksi->error);
+}
+if (!empty($paramsR)) {
+  $stmtR->bind_param($typesR, ...$paramsR);
+}
+
+$stmtR->execute();
+$resR = $stmtR->get_result();
+
+$restokRows = [];
+while ($rr = $resR->fetch_assoc()) {
+  $restokRows[] = $rr;
+}
+$stmtR->close();
 ?>
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-<!-- Chart.js untuk grafik -->
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -148,6 +202,7 @@ body{
   border-right:1px solid #fff3e0;
   font-size:13px;
   color:#424242;
+  word-wrap:break-word;
 }
 
 .tabel-ajukan tr:nth-child(even){
@@ -181,23 +236,32 @@ body{
   font-size:13px;
   color:#444;
 }
-
 .keterangan_warnah{
   display:flex;
   align-items:center;
   gap:6px;
 }
-
 .warnah{
   width:14px;
   height:14px;
   border-radius:4px;
   display:inline-block;
 }
-
 .warnah.merah{ background:#f44336; }
 .warnah.kuning{ background:#ffc107; }
 .warnah.hijau{ background:#4caf50; }
+
+/* badge status restok */
+.badge{
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+  display:inline-block;
+}
+.badge.menunggu{ background:#ffebee; color:#b71c1c; }
+.badge.dikirim{ background:#fff8e1; color:#8d6e00; }
+.badge.selesai{ background:#e8f5e9; color:#1b5e20; }
 
 @media screen and (max-width: 768px) {
   .konten-utama{
@@ -311,7 +375,7 @@ body{
     </div>
   </div>
 
-  <!-- GRAFIK STOK GUDANG (DITAMBAHKAN SESUAI PERMINTAAN) -->
+  <!-- GRAFIK STOK GUDANG -->
   <div class="kotak_grafik">
     <div class="judul_grafik">Grafik Stok Gudang (per Barang)</div>
     <canvas id="gudangChart" height="110"></canvas>
@@ -323,11 +387,48 @@ body{
     </div>
   </div>
 
+  <div style="margin-top:22px;"></div>
+
+  <!-- =========================
+       MONITORING RESTOK (A)
+  ========================== -->
+  <h2 style="margin-top:10px;">Monitoring Restok Outlet → Gudang</h2>
+
+  <table id="tabel-restok" class="tabel-ajukan">
+    <thead>
+      <tr>
+        <th>ID Restok</th>
+        <th>Outlet</th>
+        <th>Nama Barang</th>
+        <th>Jumlah</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php foreach($restokRows as $r): ?>
+        <?php
+          $st = strtolower(trim($r['Status'] ?? 'menunggu'));
+          $cls = 'menunggu';
+          if ($st === 'selesai') $cls = 'selesai';
+          else if ($st === 'dikirim') $cls = 'dikirim';
+        ?>
+        <tr>
+          <td data-label="ID Restok"><?= (int)$r['Id_restok_bahan']; ?></td>
+          <td data-label="Outlet"><?= htmlspecialchars($r['nama_outlet']); ?></td>
+          <td data-label="Nama Barang"><?= htmlspecialchars($r['nama_barang'] ?? '-'); ?></td>
+          <td data-label="Jumlah"><?= (int)$r['Jumlah_restok']; ?></td>
+          <td data-label="Status"><span class="badge <?= $cls; ?>"><?= htmlspecialchars($r['Status'] ?? '-'); ?></span></td>
+        </tr>
+      <?php endforeach; ?>
+    </tbody>
+  </table>
+
 </div>
 
 <script>
 $(document).ready(function () {
-  // ===== DATATABLES =====
+
+  // ===== DATATABLES: STOK =====
   $('#tabel-stok-outlet').DataTable({
     pageLength: 10,
     lengthMenu: [5, 10, 25, 50],
@@ -345,10 +446,26 @@ $(document).ready(function () {
     }
   });
 
-  // ===== DATA DARI PHP =====
-  const rawRows = <?=
-    json_encode($rows, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-  ?>;
+  // ===== DATATABLES: RESTOK =====
+  $('#tabel-restok').DataTable({
+    pageLength: 10,
+    lengthMenu: [5, 10, 25, 50],
+    language: {
+      emptyTable: "Tidak ada data restok",
+      info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+      infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
+      infoFiltered: "(disaring dari _MAX_ data total)",
+      lengthMenu: "Tampilkan _MENU_ data",
+      loadingRecords: "Memuat...",
+      processing: "Sedang diproses...",
+      search: "Cari:",
+      zeroRecords: "Tidak ditemukan data yang sesuai",
+      paginate: { first: "Pertama", last: "Terakhir", next: "Berikutnya", previous: "Sebelumnya" }
+    }
+  });
+
+  // ===== DATA DARI PHP (STOK) =====
+  const rawRows = <?= json_encode($rows, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 
   // ===== WARNA SESUAI LEVEL STOK =====
   function pickColor(stok, min) {
@@ -362,6 +479,7 @@ $(document).ready(function () {
     return 'rgba(76, 175, 80, 0.85)';
   }
 
+  // ===== PREP DATA: STOK OUTLET =====
   const outletSet = new Set();
   const barangSet = new Set();
 
@@ -443,8 +561,7 @@ $(document).ready(function () {
     });
   }
 
-  // ===== CHART STOK GUDANG  =====
-
+  // ===== CHART STOK GUDANG =====
   const gudangMap = {};
   rawRows.forEach(r => {
     const barang = (r.nama_barang ?? '').toString();
@@ -495,6 +612,7 @@ $(document).ready(function () {
       }
     });
   }
+
 
 });
 </script>

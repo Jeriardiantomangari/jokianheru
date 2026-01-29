@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Waktu pembuatan: 15 Jan 2026 pada 04.40
+-- Waktu pembuatan: 29 Jan 2026 pada 08.30
 -- Versi server: 8.4.3
 -- Versi PHP: 8.3.26
 
@@ -73,7 +73,9 @@ INSERT INTO `bahan_masuk` (`Id_bahan_masuk`, `Id_restok_bahan`, `Nama_barang`, `
 (9, 9, 'garam', 5, 5),
 (13, 14, 'ayam', 1, 1),
 (14, 15, 'ayam', 2, 2),
-(15, 16, 'ayam', 33, 33);
+(16, 19, 'ikan', 30, 30),
+(17, 18, 'garam', 30, 30),
+(19, 17, 'garam', 3, 3);
 
 -- --------------------------------------------------------
 
@@ -114,13 +116,6 @@ CREATE TABLE `barang_masuk` (
   `Jumlah_restok` int DEFAULT NULL,
   `Barang_masuk` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data untuk tabel `barang_masuk`
---
-
-INSERT INTO `barang_masuk` (`Id_barang_masuk`, `Id_restok_barang`, `Nama_barang`, `Harga`, `Jumlah_restok`, `Barang_masuk`) VALUES
-(13, 60, 'garam', NULL, 300, 30);
 
 -- --------------------------------------------------------
 
@@ -260,8 +255,11 @@ INSERT INTO `restok_bahan_outlet` (`Id_restok_bahan`, `Id_outlet`, `Id_stok_outl
 (10, 1, 4, 'ikan', 250, 'Selesai'),
 (14, 1, 3, 'ayam', 1, 'Selesai'),
 (15, 5, 6, 'ayam', 2, 'Selesai'),
-(16, 1, 3, 'ayam', 33, 'Selesai'),
-(17, 1, 5, 'garam', 3, 'Dikirim');
+(17, 1, 5, 'garam', 3, 'Selesai'),
+(18, 5, 7, 'garam', 30, 'Selesai'),
+(19, 5, 8, 'ikan', 30, 'Selesai'),
+(21, 1, 5, 'garam', 1, 'Menunggu'),
+(22, 5, 7, 'garam', 1, 'Dikirim');
 
 -- --------------------------------------------------------
 
@@ -278,14 +276,6 @@ CREATE TABLE `restok_barang` (
   `Total_harga` decimal(10,2) DEFAULT NULL,
   `Status` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data untuk tabel `restok_barang`
---
-
-INSERT INTO `restok_barang` (`Id_restok_barang`, `Id_stok_gudang`, `Nama_barang`, `Harga`, `Jumlah_restok`, `Total_harga`, `Status`) VALUES
-(60, 6, 'garam', 3000.00, 300, 900000.00, 'Selesai'),
-(61, 5, 'ayam', 100000.00, 3, 300000.00, 'Menunggu');
 
 -- --------------------------------------------------------
 
@@ -306,9 +296,9 @@ CREATE TABLE `stok_gudang` (
 --
 
 INSERT INTO `stok_gudang` (`Id_stok_gudang`, `id_barang`, `Nama_barang`, `Kategori`, `Jumlah_stok`) VALUES
-(4, 4, 'ikan', '1', 56),
-(5, 1, 'ayam', '1', 781),
-(6, 5, 'garam', '1', 62);
+(4, 4, 'ikan', '1', 26),
+(5, 1, 'ayam', '1', 764),
+(6, 5, 'garam', '1', 31);
 
 -- --------------------------------------------------------
 
@@ -332,8 +322,10 @@ CREATE TABLE `stok_outlet` (
 INSERT INTO `stok_outlet` (`Id_stok_outlet`, `id_outlet`, `id_barang`, `Nama_barang`, `Kategori`, `Jumlah_stok`) VALUES
 (3, 1, 1, 'ayam', '1', 64),
 (4, 1, 4, 'ikan', '1', 330),
-(5, 1, 5, 'garam', '1', 5),
-(6, 5, 1, 'ayam', '1', 0);
+(5, 1, 5, 'garam', '1', 8),
+(6, 5, 1, 'ayam', '1', 20),
+(7, 5, 5, 'garam', '1', 30),
+(8, 5, 4, 'ikan', '1', 30);
 
 --
 -- Indeks untuk tabel yang dibuang
@@ -445,7 +437,7 @@ ALTER TABLE `akun`
 -- AUTO_INCREMENT untuk tabel `bahan_masuk`
 --
 ALTER TABLE `bahan_masuk`
-  MODIFY `Id_bahan_masuk` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `Id_bahan_masuk` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT untuk tabel `barang`
@@ -457,7 +449,7 @@ ALTER TABLE `barang`
 -- AUTO_INCREMENT untuk tabel `barang_masuk`
 --
 ALTER TABLE `barang_masuk`
-  MODIFY `Id_barang_masuk` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `Id_barang_masuk` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT untuk tabel `detail_penjualan`
@@ -493,7 +485,7 @@ ALTER TABLE `penjualan`
 -- AUTO_INCREMENT untuk tabel `restok_bahan_outlet`
 --
 ALTER TABLE `restok_bahan_outlet`
-  MODIFY `Id_restok_bahan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `Id_restok_bahan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT untuk tabel `restok_barang`
@@ -511,7 +503,7 @@ ALTER TABLE `stok_gudang`
 -- AUTO_INCREMENT untuk tabel `stok_outlet`
 --
 ALTER TABLE `stok_outlet`
-  MODIFY `Id_stok_outlet` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `Id_stok_outlet` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)

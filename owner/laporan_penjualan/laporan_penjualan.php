@@ -43,6 +43,9 @@ $tanggal_detail = $_GET['tanggal_detail'] ?? $periode_mulai;
 if ($tanggal_detail < $periode_mulai)   $tanggal_detail = $periode_mulai;
 if ($tanggal_detail > $periode_selesai) $tanggal_detail = $periode_selesai;
 
+/* =========================
+   SUMMARY PER OUTLET
+========================= */
 $sqlSummary = "
     SELECT 
         o.id_outlet,
@@ -79,6 +82,85 @@ while ($row = $result->fetch_assoc()) {
 }
 $stmt->close();
 
+/* =========================
+   DETAIL TRANSAKSI PER OUTLET
+========================= */
+$detailOutlet = [];      // [id_outlet] => ['nama_outlet'=>..., 'transaksi'=>[...]]
+$rekapMenuOutlet = [];   // tetap dibiarkan (tidak dipakai di tampilan sekarang)
+
+$sqlDetail = "
+    SELECT
+        o.id_outlet,
+        o.nama_outlet,
+        p.id_penjualan,
+        p.tanggal,
+        p.total_harga,
+        a.nama AS nama_kasir,
+
+        dp.id_menu,
+        COALESCE(dp.Nama_menu, m.nama_menu) AS nama_menu,
+        COALESCE(dp.Harga, m.harga) AS harga_satuan,
+        dp.Jumlah,
+        dp.Total
+    FROM penjualan p
+    JOIN outlet o ON o.id_outlet = p.id_outlet
+    LEFT JOIN akun a ON a.id_akun = p.id_kasir
+    JOIN detail_penjualan dp ON dp.id_penjualan = p.id_penjualan
+    LEFT JOIN menu m ON m.id_menu = dp.id_menu
+    WHERE DATE(p.tanggal) BETWEEN ? AND ?
+    ORDER BY o.nama_outlet, p.tanggal DESC, p.id_penjualan DESC, dp.id_menu ASC
+";
+
+$stmtD = $koneksi->prepare($sqlDetail);
+if (!$stmtD) {
+    die("Gagal prepare detail: " . $koneksi->error);
+}
+$stmtD->bind_param("ss", $periode_mulai, $periode_selesai);
+$stmtD->execute();
+$resD = $stmtD->get_result();
+
+while ($r = $resD->fetch_assoc()) {
+    $id_outlet = (int)$r['id_outlet'];
+    $id_penjualan = (int)$r['id_penjualan'];
+
+    if (!isset($detailOutlet[$id_outlet])) {
+        $detailOutlet[$id_outlet] = [
+            'nama_outlet' => $r['nama_outlet'],
+            'transaksi' => []
+        ];
+    }
+
+    if (!isset($detailOutlet[$id_outlet]['transaksi'][$id_penjualan])) {
+        $detailOutlet[$id_outlet]['transaksi'][$id_penjualan] = [
+            'id_penjualan' => $id_penjualan,
+            'tanggal' => $r['tanggal'],
+            'total_harga' => (int)$r['total_harga'],
+            'nama_kasir' => $r['nama_kasir'] ?? '-',
+            'items' => []
+        ];
+    }
+
+    $nama_menu = $r['nama_menu'] ?? '-';
+    $harga_satuan = (int)($r['harga_satuan'] ?? 0);
+    $jumlah = (int)($r['Jumlah'] ?? 0);
+    $total = (int)($r['Total'] ?? 0);
+
+    $detailOutlet[$id_outlet]['transaksi'][$id_penjualan]['items'][] = [
+        'nama_menu' => $nama_menu,
+        'harga' => $harga_satuan,
+        'jumlah' => $jumlah,
+        'total' => $total
+    ];
+}
+$stmtD->close();
+
+foreach ($detailOutlet as $oid => $payload) {
+    $detailOutlet[$oid]['transaksi'] = array_values($payload['transaksi']);
+}
+
+/* =========================
+   CHART DATA
+========================= */
 $chart_labels   = [];
 $chart_datasets = [];
 $chart_main_title = '';
@@ -124,7 +206,6 @@ if ($jenis_laporan == 'harian') {
 
     $chart_main_title = 'Penjualan Harian per Outlet (Mingguan)';
 
-    // list tanggal & nama hari
     $start = new DateTime($tanggal_mulai_minggu);
     $end   = new DateTime($tanggal_selesai_minggu);
     $end->setTime(0,0,0);
@@ -172,8 +253,8 @@ if ($jenis_laporan == 'harian') {
     $stmtDaily->execute();
     $resDaily = $stmtDaily->get_result();
 
-    $outletNames = []; // id_outlet => nama_outlet
-    $dataMatrix  = []; // id_outlet => [..nilai per hari..]
+    $outletNames = [];
+    $dataMatrix  = [];
 
     while ($r = $resDaily->fetch_assoc()) {
         $id_outlet = (int)$r['id_outlet'];
@@ -231,12 +312,12 @@ if ($jenis_laporan == 'harian') {
     $stmtM->execute();
     $resM = $stmtM->get_result();
 
-    $outletNames = []; // id_outlet => nama_outlet
-    $dataMatrix  = []; // id_outlet => [week1..week4]
+    $outletNames = [];
+    $dataMatrix  = [];
 
     while ($r = $resM->fetch_assoc()) {
         $id_outlet = (int)$r['id_outlet'];
-        $minggu_ke = (int)$r['minggu_ke']; // 1..4
+        $minggu_ke = (int)$r['minggu_ke'];
         $total     = (int)$r['total_penjualan'];
 
         if (!isset($outletNames[$id_outlet])) {
@@ -591,39 +672,118 @@ if ($jenis_laporan == 'harian') {
             </div>
             <p class="teks-subkartu">
                 Ringkasan total transaksi dan total penjualan setiap outlet pada periode yang dipilih.
+                Klik <b>Lihat</b> untuk melihat transaksi & menu yang terjual.
             </p>
+
             <div class="pembungkus-tabel">
                 <div class="gulir-tabel">
                     <table>
                         <thead>
-                            <tr>
+                            <tr id="table-head-row">
                                 <th>Outlet</th>
                                 <th class="teks-tengah">Total Transaksi</th>
                                 <th class="teks-kanan">Total Penjualan</th>
+                                <th class="teks-tengah">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                         <?php if (!empty($rows)): ?>
                             <?php foreach ($rows as $r): ?>
-                                <tr>
+                                <?php $oid = (int)$r['id_outlet']; ?>
+
+                                <tr id="summary-row-<?= $oid; ?>">
                                     <td><?= htmlspecialchars($r['nama_outlet']); ?></td>
                                     <td class="teks-tengah"><?= number_format($r['total_transaksi'], 0, ',', '.'); ?></td>
                                     <td class="teks-kanan">Rp <?= number_format($r['total_penjualan'], 0, ',', '.'); ?></td>
+                                    <td class="teks-tengah">
+                                        <button type="button"
+                                                id="btn-toggle-<?= $oid; ?>"
+                                                class="tombol-utama"
+                                                style="padding:6px 12px; font-size:12px;"
+                                                onclick="toggleOutletDetail(<?= $oid; ?>)">
+                                            Lihat
+                                        </button>
+                                    </td>
                                 </tr>
+
+                                <!-- PANEL DETAIL (accordion) -->
+                                <tr id="detail-row-<?= $oid; ?>" style="display:none;">
+                                    <td colspan="4" style="background:#fffaf0;">
+                                        <div style="padding:10px 6px;">
+                                            <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-start;">
+
+                                                <div style="flex:1; min-width:320px;">
+                                                    <h4 style="margin:0 0 8px 0; color:#bf360c;">
+                                                        Daftar Menu Terjual - <?= htmlspecialchars($r['nama_outlet']); ?>
+                                                    </h4>
+
+                                                    <?php if (!empty($detailOutlet[$oid]['transaksi'])): ?>
+                                                        <?php foreach ($detailOutlet[$oid]['transaksi'] as $tx): ?>
+                                                            <div style="margin-bottom:10px; border:1px solid #ffe0b2; border-radius:12px; overflow:hidden;">
+                                                                <div style="padding:8px 10px;">
+                                                                    <table>
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <th>Menu</th>
+                                                                                <th class="teks-kanan">Harga</th>
+                                                                                <th class="teks-tengah">Jml</th>
+                                                                                <th class="teks-kanan">Subtotal</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            <?php foreach ($tx['items'] as $it): ?>
+                                                                                <tr>
+                                                                                    <td><?= htmlspecialchars($it['nama_menu']); ?></td>
+                                                                                    <td class="teks-kanan">Rp <?= number_format((int)$it['harga'], 0, ',', '.'); ?></td>
+                                                                                    <td class="teks-tengah"><?= number_format((int)$it['jumlah'], 0, ',', '.'); ?></td>
+                                                                                    <td class="teks-kanan">Rp <?= number_format((int)$it['total'], 0, ',', '.'); ?></td>
+                                                                                </tr>
+                                                                            <?php endforeach; ?>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        <?php endforeach; ?>
+                                                    <?php else: ?>
+                                                        <div style="padding:10px; border:1px dashed #ffd180; border-radius:10px; color:#999; font-style:italic;">
+                                                            Tidak ada transaksi untuk outlet ini pada periode terpilih.
+                                                        </div>
+                                                    <?php endif; ?>
+
+                                                    <!-- Tombol Kembali di paling bawah -->
+                                                    <div style="margin-top:12px; text-align:right;">
+                                                        <button type="button"
+                                                                class="tombol-utama"
+                                                                style="padding:6px 12px; font-size:12px;"
+                                                                onclick="closeOutletDetail(<?= $oid; ?>)">
+                                                            Kembali
+                                                        </button>
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr class="baris-kosong">
-                                <td colspan="3">Tidak ada data laporan untuk periode ini.</td>
+                                <td colspan="4">Tidak ada data laporan untuk periode ini.</td>
                             </tr>
                         <?php endif; ?>
                         </tbody>
+
                         <tfoot>
-                            <tr>
+                            <tr id="grand-total-row">
                                 <th>Grand Total</th>
                                 <th class="teks-tengah"><?= number_format($total_transaksi_all, 0, ',', '.'); ?> transaksi</th>
                                 <th class="teks-kanan">Rp <?= number_format($grand_total, 0, ',', '.'); ?></th>
+                                <th></th>
                             </tr>
                         </tfoot>
+
                     </table>
                 </div>
             </div>
@@ -638,13 +798,13 @@ const chartDatasetsRaw = <?= json_encode($chart_datasets); ?>;
 const jenisLaporan     = '<?= $jenis_laporan; ?>';
 
 const baseColors = [
-    { bg: 'rgba(244, 67, 54, 0.7)',  border: 'rgba(244, 67, 54, 1)' },   // merah
-    { bg: 'rgba(33, 150, 243, 0.7)', border: 'rgba(33, 150, 243, 1)' },  // biru
-    { bg: 'rgba(76, 175, 80, 0.7)',  border: 'rgba(76, 175, 80, 1)' },   // hijau
-    { bg: 'rgba(255, 193, 7, 0.7)',  border: 'rgba(255, 193, 7, 1)' },   // kuning
-    { bg: 'rgba(156, 39, 176, 0.7)', border: 'rgba(156, 39, 176, 1)' },  // ungu
-    { bg: 'rgba(0, 188, 212, 0.7)',  border: 'rgba(0, 188, 212, 1)' },   // tosca
-    { bg: 'rgba(255, 87, 34, 0.7)',  border: 'rgba(255, 87, 34, 1)' },   // oranye
+    { bg: 'rgba(244, 67, 54, 0.7)',  border: 'rgba(244, 67, 54, 1)' },
+    { bg: 'rgba(33, 150, 243, 0.7)', border: 'rgba(33, 150, 243, 1)' },
+    { bg: 'rgba(76, 175, 80, 0.7)',  border: 'rgba(76, 175, 80, 1)' },
+    { bg: 'rgba(255, 193, 7, 0.7)',  border: 'rgba(255, 193, 7, 1)' },
+    { bg: 'rgba(156, 39, 176, 0.7)', border: 'rgba(156, 39, 176, 1)' },
+    { bg: 'rgba(0, 188, 212, 0.7)',  border: 'rgba(0, 188, 212, 1)' },
+    { bg: 'rgba(255, 87, 34, 0.7)',  border: 'rgba(255, 87, 34, 1)' },
 ];
 
 let datasets = [];
@@ -720,6 +880,68 @@ new Chart(ctx, {
         }
     }
 });
+
+/* =========================
+   MODE DETAIL: hanya 1 outlet tampil + tombol jadi Kembali
+========================= */
+function openOutletDetail(idOutlet) {
+    // tutup semua detail
+    document.querySelectorAll('tr[id^="detail-row-"]').forEach(r => r.style.display = 'none');
+
+    // sembunyikan semua summary outlet
+    document.querySelectorAll('tr[id^="summary-row-"]').forEach(r => r.style.display = 'none');
+
+    // tampilkan summary outlet yang dipilih
+    const summaryRow = document.getElementById('summary-row-' + idOutlet);
+    if (summaryRow) summaryRow.style.display = 'table-row';
+
+    // tampilkan detail outlet yang dipilih
+    const detailRow = document.getElementById('detail-row-' + idOutlet);
+    if (detailRow) detailRow.style.display = 'table-row';
+
+    // ubah semua tombol jadi Lihat, lalu tombol yang dipilih jadi Kembali
+    document.querySelectorAll('button[id^="btn-toggle-"]').forEach(btn => btn.textContent = 'Lihat');
+    const btn = document.getElementById('btn-toggle-' + idOutlet);
+    if (btn) btn.textContent = 'Kembali';
+
+    // sembunyikan grand total saat mode detail
+    const grandRow = document.getElementById('grand-total-row');
+    if (grandRow) grandRow.style.display = 'none';
+
+    // opsional: scroll ke detail
+    if (detailRow) detailRow.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeOutletDetail(idOutlet) {
+    // tampilkan semua summary outlet
+    document.querySelectorAll('tr[id^="summary-row-"]').forEach(r => r.style.display = 'table-row');
+
+    // tutup semua detail
+    document.querySelectorAll('tr[id^="detail-row-"]').forEach(r => r.style.display = 'none');
+
+    // tombol kembali ke Lihat
+    document.querySelectorAll('button[id^="btn-toggle-"]').forEach(btn => btn.textContent = 'Lihat');
+
+    // tampilkan grand total lagi
+    const grandRow = document.getElementById('grand-total-row');
+    if (grandRow) grandRow.style.display = 'table-row';
+
+    // scroll balik ke summary outlet
+    const summaryRow = document.getElementById('summary-row-' + idOutlet);
+    if (summaryRow) summaryRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function toggleOutletDetail(idOutlet){
+    const detailRow = document.getElementById('detail-row-' + idOutlet);
+    if(!detailRow) return;
+
+    const isOpen = (detailRow.style.display === 'table-row');
+    if (isOpen) {
+        closeOutletDetail(idOutlet);
+    } else {
+        openOutletDetail(idOutlet);
+    }
+}
 </script>
 
 </body>
