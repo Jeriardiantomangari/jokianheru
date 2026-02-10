@@ -121,7 +121,7 @@ try {
         mysqli_stmt_bind_param($u1, "ii", $jumlah, $id_stok_gudang);
         mysqli_stmt_execute($u1);
 
-        // 5) Update status pengajuan -> Dikirim (tanpa updated_at karena tidak ada kolomnya)
+        // 5) Update status pengajuan 
         $u2 = mysqli_prepare($conn, "
             UPDATE restok_bahan_outlet
             SET Status = 'Dikirim'

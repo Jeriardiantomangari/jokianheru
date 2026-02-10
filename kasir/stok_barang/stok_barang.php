@@ -18,7 +18,7 @@ $id_outlet = (int)$_SESSION['id_outlet'];
 $qOutlet = mysqli_query($conn, "SELECT nama_outlet FROM outlet WHERE id_outlet = $id_outlet");
 $rowOutlet = mysqli_fetch_assoc($qOutlet);
 $namaOutlet = $rowOutlet ? $rowOutlet['nama_outlet'] : 'Outlet Tidak Dikenal';
-
+// query untuk mengambil data stok barang per outlet
 $sql = "
   SELECT
     so.Id_stok_outlet,

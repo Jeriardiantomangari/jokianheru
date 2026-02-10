@@ -11,10 +11,7 @@ function norm_status($s) {
     return strtolower(trim((string)$s));
 }
 
-/**
- * Cari / pastikan Id_stok_gudang berdasarkan id_barang.
- * Kalau belum ada stok_gudang untuk barang tsb, buat otomatis.
- */
+/* Cari / pastikan Id_stok_gudang berdasarkan id_barang.*/
 function get_or_create_stok_gudang($conn, $id_barang) {
     // 1) cari stok_gudang
     $sql = "SELECT Id_stok_gudang FROM stok_gudang WHERE Id_barang = ? LIMIT 1";
@@ -233,7 +230,7 @@ if (isset($_POST['aksi']) && $_POST['aksi'] === 'selesai') {
             throw new Exception("Barang masuk tidak boleh melebihi jumlah restok yang disetujui.");
         }
 
-        // (opsional tapi disarankan) cegah konfirmasi dobel
+        // cegah konfirmasi dobel
         $sqlCekLog = "SELECT 1 FROM barang_masuk WHERE Id_restok_barang = ? LIMIT 1";
         $stmtCekLog = mysqli_prepare($conn, $sqlCekLog);
         mysqli_stmt_bind_param($stmtCekLog, "i", $id);
@@ -244,7 +241,6 @@ if (isset($_POST['aksi']) && $_POST['aksi'] === 'selesai') {
         }
 
         // SIMPAN log konfirmasi ke tabel barang_masuk
-        // Pastikan kolom: Id_restok_barang, Nama_barang, Jumlah_restok, Barang_masuk
         $sqlLog = "INSERT INTO barang_masuk (Id_restok_barang, Nama_barang, Jumlah_restok, Barang_masuk)
                    VALUES (?, ?, ?, ?)";
         $stmtLog = mysqli_prepare($conn, $sqlLog);
@@ -301,7 +297,7 @@ if ($id_barang <= 0 || $jumlah_restok <= 0) {
     exit;
 }
 
-// ambil data barang (pakai nama kolom yang benar: nama_barang, harga)
+// ambil data barang 
 $sqlB = "SELECT nama_barang, harga FROM barang WHERE id_barang = ? LIMIT 1";
 $stmtB = mysqli_prepare($conn, $sqlB);
 mysqli_stmt_bind_param($stmtB, "i", $id_barang);

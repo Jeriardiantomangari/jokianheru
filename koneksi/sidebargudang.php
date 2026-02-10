@@ -137,7 +137,6 @@ $halaman = basename($_SERVER['PHP_SELF']);
       margin-top: auto;             
       margin-left: 20px;
       margin-right: 20px;
-      margin-bottom: 50px;
     }
 
     .tombol-keluar i {

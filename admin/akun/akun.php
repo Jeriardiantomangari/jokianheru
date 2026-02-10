@@ -3,7 +3,6 @@ session_start();
 include '../../koneksi/sidebaradmin.php'; 
 include '../../koneksi/koneksi.php'; 
 
-// Cek role (kalau mau owner juga bisa akses, nanti bisa jadi: !in_array($_SESSION['role'], ['admin','owner']))
 if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
     header("Location: ../index.php"); 
     exit;
@@ -42,7 +41,6 @@ $qo_outlet = mysqli_query($conn, "SELECT id_outlet, nama_outlet FROM outlet ORDE
   letter-spacing:.5px;
 }
 
-/* TOMBOL-TOMBOL */
 .tombol { 
   border:none; 
   border-radius:6px; 
@@ -64,21 +62,18 @@ $qo_outlet = mysqli_query($conn, "SELECT id_outlet, nama_outlet FROM outlet ORDE
   box-shadow:0 2px 6px rgba(0,0,0,0.18);
 }
 
-/* Tambah = kuning keemasan */
 .tombol-tambah { 
   background:#ffb300; 
   margin-bottom:12px; 
   padding:8px 15px; 
 }
 
-/* Cetak = hijau tapi sedikit warm */
 .tombol-cetak { 
   background:#43a047; 
   margin-right:10px; 
   padding:8px 15px; 
 }
 
-/* Edit = oranye */
 .tombol-edit { 
   background:#fb8c00; 
   min-width:70px; 
@@ -86,14 +81,12 @@ $qo_outlet = mysqli_query($conn, "SELECT id_outlet, nama_outlet FROM outlet ORDE
   padding:6px 10px; 
 }
 
-/* Hapus = merah gelap */
 .tombol-hapus { 
   background:#c62828; 
   min-width:70px; 
   padding:6px 10px; 
 }
 
-/* Control DataTables */
 .dataTables_wrapper .dataTables_filter input,
 .dataTables_wrapper .dataTables_length select { 
   padding:6px 10px; 
@@ -110,7 +103,6 @@ $qo_outlet = mysqli_query($conn, "SELECT id_outlet, nama_outlet FROM outlet ORDE
   box-shadow:0 0 0 2px rgba(251,140,0,0.15);
 }
 
-/* Tabel Akun */
 .tabel-akun { 
   width:100%; 
   border-collapse:collapse; 
@@ -145,8 +137,6 @@ $qo_outlet = mysqli_query($conn, "SELECT id_outlet, nama_outlet FROM outlet ORDE
   background:#fffdf7;
 }
 
-
-/* Modal */
 .kotak-modal { 
   display:none; 
   position:fixed; 
@@ -307,7 +297,6 @@ $qo_outlet = mysqli_query($conn, "SELECT id_outlet, nama_outlet FROM outlet ORDE
         <th>Nama</th>
         <th>Username</th>
         <th>Password</th>
-        <!-- TAMBAHAN: kolom Outlet -->
         <th>Outlet</th>
         <th>Role</th>
         <th>Aksi</th>
@@ -332,7 +321,6 @@ while($row = mysqli_fetch_assoc($query)) {
         <td data-label="Nama"><?php echo $row['nama']; ?></td>
         <td data-label="Username"><?php echo $row['username']; ?></td>
         <td data-label="Password"><?php echo $row['password']; ?></td>
-        <!-- TAMBAHAN: tampilkan nama outlet / id_outlet -->
         <td data-label="Outlet">
           <?php 
             if($row['nama_outlet']){
@@ -383,7 +371,6 @@ while($row = mysqli_fetch_assoc($query)) {
       <select name="id_outlet" id="id_outlet">
         <option value="">-- Pilih Outlet (khusus kasir) --</option>
         <?php 
-        // reset pointer jika perlu
         mysqli_data_seek($qo_outlet, 0);
         while($o = mysqli_fetch_assoc($qo_outlet)){ ?>
           <option value="<?php echo $o['id_outlet']; ?>">
@@ -404,7 +391,6 @@ $(document).ready(function () {
     "pageLength": 10,
     "lengthMenu": [5, 10, 25, 50],
     "columnDefs": [{
-      // TAMBAHAN: kolom Aksi sekarang index ke-6 (0:No,1:Nama,2:User,3:Pass,4:Outlet,5:Role,6:Aksi)
       "orderable": false, "targets": 6
     }],
     "language": {
@@ -440,7 +426,7 @@ function editAkun(id) {
   $.post('proses_akun.php', {aksi:'ambil', id:id}, function(data){
     let obj = JSON.parse(data);
     $('#judulModal').text('Edit Akun');
-    $('#idAkun').val(obj.id_akun);  // Pastikan ini benar sesuai dengan kolom 'id_akun'
+    $('#idAkun').val(obj.id_akun);  
     $('#nama').val(obj.nama);
     $('#username').val(obj.username);
     $('#password').val(obj.password);
@@ -495,7 +481,6 @@ $('.tombol-cetak').click(function(){
   doc.text("Data Akun", 105, 15, {align:"center"});
 
   let headers = [];
-  // TAMBAHAN: sekarang kolom Aksi index ke-6, jadi skip index 6
   $('#tabel-akun thead th').each(function(index){ 
     if(index !== 6) headers.push($(this).text()); 
   });

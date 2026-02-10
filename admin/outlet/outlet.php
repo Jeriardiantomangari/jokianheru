@@ -22,7 +22,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
 <style>
-/* AREA KONTEN UTAMA */
 .konten-utama { 
   margin-left:250px; 
   margin-top:60px; 
@@ -39,7 +38,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   letter-spacing:.5px;
 }
 
-/* TOMBOL-TOMBOL */
 .tombol { 
   border:none; 
   border-radius:6px; 
@@ -61,21 +59,18 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   box-shadow:0 2px 6px rgba(0,0,0,0.18);
 }
 
-/* Tambah = kuning keemasan */
 .tombol-tambah { 
   background:#ffb300; 
   margin-bottom:12px; 
   padding:8px 15px; 
 }
 
-/* Cetak = hijau warm */
 .tombol-cetak { 
   background:#43a047; 
   margin-right:10px; 
   padding:8px 15px; 
 }
 
-/* Edit = oranye */
 .tombol-edit { 
   background:#fb8c00; 
   min-width:70px; 
@@ -83,14 +78,13 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   padding:6px 10px; 
 }
 
-/* Hapus = merah gelap */
+
 .tombol-hapus { 
   background:#c62828; 
   min-width:70px; 
   padding:6px 10px; 
 }
 
-/* Control DataTables */
 .dataTables_wrapper .dataTables_filter input,
 .dataTables_wrapper .dataTables_length select { 
   padding:6px 10px; 
@@ -107,7 +101,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   box-shadow:0 0 0 2px rgba(251,140,0,0.15);
 }
 
-/* Tabel Outlet (pakai class lama biar CSS kepakai) */
 .tabel-barang { 
   width:100%; 
   border-collapse:collapse; 
@@ -142,7 +135,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   background:#fffdf7;
 }
 
-/* Modal */
 .kotak-modal { 
   display:none; 
   position:fixed; 
@@ -310,7 +302,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
     <tbody>
       <?php
       $no=1;
-      // tabel: outlet (id, nama_outlet, alamat)
       $query = mysqli_query($conn,"SELECT * FROM outlet ORDER BY id_outlet ASC");
       while($row=mysqli_fetch_assoc($query)) {
       ?>
@@ -356,7 +347,7 @@ $(document).ready(function () {
     "pageLength": 10,
     "lengthMenu": [5, 10, 25, 50],
     "columnDefs": [{
-      "orderable": false, "targets": 3   // kolom Aksi
+      "orderable": false, "targets": 3  
     }],
     "language": {
       "emptyTable": "Tidak ada data tersedia",
@@ -433,7 +424,6 @@ $('.tombol-cetak').click(function(){
   doc.text("Data Outlet", 105, 15, {align:"center"});
 
   let headers = [];
-  // skip kolom Aksi (indeks 3)
   $('#tabel-outlet thead th').each(function(index){ 
     if(index !== 3) headers.push($(this).text()); 
   });

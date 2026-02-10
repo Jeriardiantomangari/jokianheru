@@ -85,8 +85,8 @@ $stmt->close();
 /* =========================
    DETAIL TRANSAKSI PER OUTLET
 ========================= */
-$detailOutlet = [];      // [id_outlet] => ['nama_outlet'=>..., 'transaksi'=>[...]]
-$rekapMenuOutlet = [];   // tetap dibiarkan (tidak dipakai di tampilan sekarang)
+$detailOutlet = [];    
+$rekapMenuOutlet = [];  
 
 $sqlDetail = "
     SELECT

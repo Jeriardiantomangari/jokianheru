@@ -338,23 +338,28 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'gudang') {
   <th>Status Restok</th>
   <th>Aksi</th>
 </tr>
-
     </thead>
     <tbody>
-      <?php
-        $no = 1;
-        $qAjukan = mysqli_query($conn, "
-  SELECT 
-    r.*,
-    COALESCE(SUM(bm.Barang_masuk), 0) AS barang_masuk
-  FROM restok_barang r
-  LEFT JOIN barang_masuk bm ON bm.Id_restok_barang = r.Id_restok_barang
-  GROUP BY r.Id_restok_barang
-  ORDER BY r.Id_restok_barang DESC
-");
+     <?php
+$no = 1;
+// Query mengambil data restok barang + total barang masuk
+$qAjukan = mysqli_query(
+    $conn,
+    "
+    SELECT 
+        r.*,
+        COALESCE(SUM(bm.Barang_masuk), 0) AS barang_masuk
+    FROM restok_barang r
+    LEFT JOIN barang_masuk bm 
+        ON bm.Id_restok_barang = r.Id_restok_barang
+    GROUP BY r.Id_restok_barang
+    ORDER BY r.Id_restok_barang DESC
+    "
+);
 
-        while ($a = mysqli_fetch_assoc($qAjukan)) {
-      ?>
+while ($a = mysqli_fetch_assoc($qAjukan)) {
+?>
+
       <tr>
         <td data-label="No"><?= $no++; ?></td>
 <td data-label="Nama Barang"><?= htmlspecialchars($a['Nama_barang']); ?></td>

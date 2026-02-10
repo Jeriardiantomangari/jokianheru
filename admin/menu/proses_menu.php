@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Tambah/Edit Menu
         $id = $_POST['id'] ?? '';
         $nama_menu = mysqli_real_escape_string($conn, $_POST['nama_menu']);
-        $jenis = mysqli_real_escape_string($conn, $_POST['kategori']);  // Sesuaikan dengan kategori
+        $jenis = mysqli_real_escape_string($conn, $_POST['kategori']);  
         $harga = (int)$_POST['harga'];
         $gambar_lama = $_POST['gambar_lama'] ?? '';
 

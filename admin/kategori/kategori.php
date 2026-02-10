@@ -23,7 +23,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
 <style>
-/* AREA KONTEN UTAMA */
 .konten-utama { 
   margin-left:250px; 
   margin-top:60px; 
@@ -40,7 +39,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   letter-spacing:.5px;
 }
 
-/* TOMBOL-TOMBOL */
 .tombol { 
   border:none; 
   border-radius:6px; 
@@ -62,21 +60,18 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   box-shadow:0 2px 6px rgba(0,0,0,0.18);
 }
 
-/* Tambah = kuning keemasan */
 .tombol-tambah { 
   background:#ffb300; 
   margin-bottom:12px; 
   padding:8px 15px; 
 }
 
-/* Cetak = hijau warm */
 .tombol-cetak { 
   background:#43a047; 
   margin-right:10px; 
   padding:8px 15px; 
 }
 
-/* Edit = oranye */
 .tombol-edit { 
   background:#fb8c00; 
   min-width:70px; 
@@ -84,14 +79,12 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   padding:6px 10px; 
 }
 
-/* Hapus = merah gelap */
 .tombol-hapus { 
   background:#c62828; 
   min-width:70px; 
   padding:6px 10px; 
 }
 
-/* Control DataTables */
 .dataTables_wrapper .dataTables_filter input,
 .dataTables_wrapper .dataTables_length select { 
   padding:6px 10px; 
@@ -108,7 +101,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   box-shadow:0 0 0 2px rgba(251,140,0,0.15);
 }
 
-/* Tabel Kategori */
 .tabel-kategori { 
   width:100%; 
   border-collapse:collapse; 
@@ -143,7 +135,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   background:#fffdf7;
 }
 
-/* Modal */
 .kotak-modal { 
   display:none; 
   position:fixed; 

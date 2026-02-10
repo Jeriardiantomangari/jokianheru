@@ -23,7 +23,7 @@ if (isset($_POST['aksi']) && $_POST['aksi'] == 'hapus') {
 // ==== TAMBAH / UPDATE OUTLET ====
 
 // Data dari form
-$id          = $_POST['id'] ?? '';  // ID outlet, jika kosong berarti tambah data
+$id          = $_POST['id'] ?? '';  
 $nama_outlet = $_POST['nama_outlet'];
 $alamat      = $_POST['alamat'];
 

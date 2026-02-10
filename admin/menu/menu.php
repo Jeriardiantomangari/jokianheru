@@ -3,7 +3,7 @@ session_start();
 include '../../koneksi/sidebaradmin.php'; 
 include '../../koneksi/koneksi.php'; 
 
-// Cek role (kalau mau owner juga bisa akses, ubah jadi: !in_array($_SESSION['role'], ['admin','owner']))
+// Cek role 
 if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
     header("Location: ../../index.php"); 
     exit;
@@ -22,7 +22,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
 <style>
-/* AREA KONTEN UTAMA */
 .konten-utama { 
   margin-left:250px; 
   margin-top:60px; 
@@ -39,7 +38,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   letter-spacing:.5px;
 }
 
-/* TOMBOL-TOMBOL */
 .tombol { 
   border:none; 
   border-radius:6px; 
@@ -61,21 +59,18 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   box-shadow:0 2px 6px rgba(0,0,0,0.18);
 }
 
-/* Tambah = kuning keemasan */
 .tombol-tambah { 
   background:#ffb300; 
   margin-bottom:12px; 
   padding:8px 15px; 
 }
 
-/* Cetak = hijau warm */
 .tombol-cetak { 
   background:#43a047; 
   margin-right:10px; 
   padding:8px 15px; 
 }
 
-/* Edit = oranye */
 .tombol-edit { 
   background:#fb8c00; 
   min-width:70px; 
@@ -83,14 +78,12 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   padding:6px 10px; 
 }
 
-/* Hapus = merah gelap */
 .tombol-hapus { 
   background:#c62828; 
   min-width:70px; 
   padding:6px 10px; 
 }
 
-/* Control DataTables */
 .dataTables_wrapper .dataTables_filter input,
 .dataTables_wrapper .dataTables_length select { 
   padding:6px 10px; 
@@ -107,7 +100,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   box-shadow:0 0 0 2px rgba(251,140,0,0.15);
 }
 
-/* Tabel Menu */
 .tabel-menu { 
   width:100%; 
   border-collapse:collapse; 
@@ -142,7 +134,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   background:#fffdf7;
 }
 
-/* Modal */
 .kotak-modal { 
   display:none; 
   position:fixed; 
@@ -310,7 +301,7 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
         <th>Nama Menu</th>
         <th>Jenis</th>
         <th>Harga</th>
-        <th>Gambar</th> <!-- kolom baru -->
+        <th>Gambar</th> 
         <th>Aksi</th>
       </tr>
     </thead>
@@ -354,13 +345,10 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   <div class="isi-modal">
     <span class="tutup-modal" onclick="tutupModal()">&times;</span>
     <h3 id="judulModal">Tambah Menu</h3>
-    <!-- PENTING: enctype untuk upload file -->
     <form id="formMenu" enctype="multipart/form-data">
       <input type="hidden" name="id" id="idMenu">
       <input type="hidden" name="gambar_lama" id="gambar_lama">
-
       <input type="text" name="nama_menu" id="nama_menu" placeholder="Nama Menu" required>
-
       <select name="kategori" id="kategori" required>
         <option value="">-- Pilih Jenis --</option>
         <option value="Makanan">Makanan</option>
@@ -384,7 +372,7 @@ $(document).ready(function () {
     "pageLength": 10,
     "lengthMenu": [5, 10, 25, 50],
     "columnDefs": [{
-      "orderable": false, "targets": 5   // kolom Aksi sekarang index 5
+      "orderable": false, "targets": 5   
     }],
     "language": {
       "emptyTable": "Tidak ada data tersedia",
@@ -425,7 +413,7 @@ function editMenu(id) {
     $('#kategori').val(obj.kategori);
     $('#harga').val(obj.harga);
     $('#gambar_lama').val(obj.gambar || '');
-    $('#gambar').val(''); // kosongkan input file
+    $('#gambar').val(''); 
 
     $('#modalMenu').css('display','flex');
   });
@@ -446,7 +434,7 @@ function tutupModal(){
   $('#modalMenu').hide(); 
 }
 
-// Submit Form (Tambah/Update) - pakai FormData karena ada file
+// Submit Form (Tambah/Update) 
 $('#formMenu').submit(function(e){
   e.preventDefault();
   const id = $('#idMenu').val();
@@ -458,8 +446,8 @@ $('#formMenu').submit(function(e){
     url: 'proses_menu.php',
     type: 'POST',
     data: formData,
-    processData: false,   // wajib untuk FormData
-    contentType: false,   // wajib untuk FormData
+    processData: false,   
+    contentType: false,  
     success: function(res){
       $('#modalMenu').hide();
       alert(pesan);
@@ -479,7 +467,6 @@ $('.tombol-cetak').click(function(){
   doc.text("Data Menu Makanan", 105, 15, {align:"center"});
 
   let headers = [];
-  // skip kolom Aksi (indeks 5)
   $('#tabel-menu thead th').each(function(index){ 
     if(index !== 5) headers.push($(this).text()); 
   });

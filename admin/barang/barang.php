@@ -22,7 +22,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
 <style>
-/* AREA KONTEN UTAMA */
 .konten-utama { 
   margin-left:250px; 
   margin-top:60px; 
@@ -38,8 +37,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   font-weight:700;
   letter-spacing:.5px;
 }
-
-/* TOMBOL-TOMBOL */
 .tombol { 
   border:none; 
   border-radius:6px; 
@@ -60,22 +57,17 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   transform: translateY(-1px);
   box-shadow:0 2px 6px rgba(0,0,0,0.18);
 }
-
-/* Tambah = kuning keemasan */
 .tombol-tambah { 
   background:#ffb300; 
   margin-bottom:12px; 
   padding:8px 15px; 
 }
-
-/* Cetak = hijau warm */
 .tombol-cetak { 
   background:#43a047; 
   margin-right:10px; 
   padding:8px 15px; 
 }
 
-/* Edit = oranye */
 .tombol-edit { 
   background:#fb8c00; 
   min-width:70px; 
@@ -83,14 +75,12 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   padding:6px 10px; 
 }
 
-/* Hapus = merah gelap */
 .tombol-hapus { 
   background:#c62828; 
   min-width:70px; 
   padding:6px 10px; 
 }
 
-/* Control DataTables */
 .dataTables_wrapper .dataTables_filter input,
 .dataTables_wrapper .dataTables_length select { 
   padding:6px 10px; 
@@ -107,7 +97,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   box-shadow:0 0 0 2px rgba(251,140,0,0.15);
 }
 
-/* Tabel Barang */
 .tabel-barang { 
   width:100%; 
   border-collapse:collapse; 
@@ -142,7 +131,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   background:#fffdf7;
 }
 
-/* Modal */
 .kotak-modal { 
   display:none; 
   position:fixed; 
@@ -432,10 +420,7 @@ function editBarang(id) {
     $('#judulModal').text('Edit Barang');
     $('#idBarang').val(obj.id_barang);
     $('#nama_barang').val(obj.nama_barang);
-
-    // FIX: kolom di tabel barang umumnya id_kategori
     $('#kategori').val(obj.id_kategori);
-
     $('#harga').val(obj.harga);
     $('#minimal_stok_gudang').val(obj.minimal_stok_gudang);
     $('#minimal_stok_outlet').val(obj.minimal_stok_outlet);
@@ -464,7 +449,6 @@ function tutupModal(){
   $('#modalBarang').hide();
 }
 
-// Submit Form (Tambah/Update) - FIX: cek respon server
 $('#formBarang').submit(function(e){
   e.preventDefault();
 
@@ -485,7 +469,7 @@ $('#formBarang').submit(function(e){
   });
 });
 
-// Cetak PDF (punya kamu tetap)
+// Cetak PDF
 $('.tombol-cetak').click(function(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });

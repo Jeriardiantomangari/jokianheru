@@ -320,7 +320,7 @@ body {
     <tbody>
       <?php
       $no = 1;
-
+      // Query mengambil data restok bahan outlet + total bahan masuk
       $qAjukan = mysqli_query($conn, "
         SELECT
           r.*,

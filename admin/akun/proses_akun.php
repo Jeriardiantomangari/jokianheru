@@ -3,26 +3,26 @@ include '../../koneksi/koneksi.php';
 
 // ==== AMBIL DATA UNTUK EDIT ====
 if(isset($_POST['aksi']) && $_POST['aksi'] == 'ambil'){
-    $id_akun = $_POST['id'];  // Ganti 'id' menjadi 'id_akun'
-    $q  = mysqli_query($conn, "SELECT * FROM akun WHERE id_akun='$id_akun'");  // Ganti 'pengguna' dengan 'akun' dan 'id' dengan 'id_akun'
+    $id_akun = $_POST['id'];  
+    $q  = mysqli_query($conn, "SELECT * FROM akun WHERE id_akun='$id_akun'");  
     echo json_encode(mysqli_fetch_assoc($q));
     exit;
 }
 
 // ==== HAPUS DATA ====
 if(isset($_POST['aksi']) && $_POST['aksi'] == 'hapus'){
-    $id_akun = $_POST['id'];  // Ganti 'id' menjadi 'id_akun'
-    mysqli_query($conn, "DELETE FROM akun WHERE id_akun='$id_akun'");  // Ganti 'pengguna' dengan 'akun' dan 'id' dengan 'id_akun'
+    $id_akun = $_POST['id'];  
+    mysqli_query($conn, "DELETE FROM akun WHERE id_akun='$id_akun'");  
     exit;
 }
 
 // ==== TAMBAH / UPDATE ====
-$id_akun   = $_POST['id'] ?? '';  // Ganti 'id' menjadi 'id_akun'
+$id_akun   = $_POST['id'] ?? ''; 
 $nama      = $_POST['nama'];
 $username  = $_POST['username'];
 $password  = $_POST['password'];
 $role      = $_POST['role'];
-// id_outlet boleh kosong (NULL) untuk role selain kasir
+
 $id_outlet = isset($_POST['id_outlet']) && $_POST['id_outlet'] !== '' 
              ? $_POST['id_outlet'] 
              : null;
@@ -50,7 +50,7 @@ if($id_akun == ""){
                password  = '$password',
                role      = '$role',
                id_outlet = NULL
-             WHERE id_akun='$id_akun'");  // Ganti 'id' dengan 'id_akun'
+             WHERE id_akun='$id_akun'");  
     } else {
         mysqli_query($conn,
             "UPDATE akun SET
@@ -59,7 +59,7 @@ if($id_akun == ""){
                password  = '$password',
                role      = '$role',
                id_outlet = '$id_outlet'
-             WHERE id_akun='$id_akun'");  // Ganti 'id' dengan 'id_akun'
+             WHERE id_akun='$id_akun'");  
     }
 }
 

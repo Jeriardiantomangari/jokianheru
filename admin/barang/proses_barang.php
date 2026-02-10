@@ -48,11 +48,6 @@ if ($nama_barang === '' || $kategori_id === 0 || $harga_raw === '') {
 }
 $harga = (int)$harga_raw;
 
-// ===============================
-// IMPORTANT FIX:
-// Isi kolom `kategori` (karena wajib / NOT NULL)
-// Kalau tabel kamu juga punya `id_kategori`, kita isi juga.
-// ===============================
 if ($id === '' || $id === null) {
     // TAMBAH
     $sql = "INSERT INTO barang (nama_barang, kategori, id_kategori, harga, minimal_stok_gudang, minimal_stok_outlet)

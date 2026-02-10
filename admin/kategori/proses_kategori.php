@@ -18,9 +18,8 @@ if (isset($_POST['aksi']) && $_POST['aksi'] === 'hapus') {
 }
 
 // TAMBAH / UPDATE KATEGORI
-$id            = $_POST['id'] ?? '';  // Jika tidak ada id, kosongkan
-$nama_kategori = mysqli_real_escape_string($conn, $_POST['nama_kategori']);  // Sanitasi input
-
+$id            = $_POST['id'] ?? '';  
+$nama_kategori = mysqli_real_escape_string($conn, $_POST['nama_kategori']);  
 if ($id === '' || $id === null) {
     // TAMBAH
     $sql = "INSERT INTO kategori (nama_kategori)
@@ -34,4 +33,4 @@ if ($id === '' || $id === null) {
 }
 
 mysqli_query($conn, $sql);
-echo "sukses";  // Menyampaikan hasil sukses ke pengguna
+echo "sukses";  
