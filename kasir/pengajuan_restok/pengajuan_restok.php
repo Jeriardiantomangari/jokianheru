@@ -322,15 +322,16 @@ body {
       $no = 1;
       // Query mengambil data restok bahan outlet + total bahan masuk
       $qAjukan = mysqli_query($conn, "
-        SELECT
-          r.*,
-          COALESCE(SUM(bm.Jumlah_restok),0) AS bahan_masuk_total
-        FROM restok_bahan_outlet r
-        LEFT JOIN bahan_masuk bm ON bm.Id_restok_bahan = r.Id_restok_bahan
-        WHERE r.Id_outlet = $id_outlet
-        GROUP BY r.Id_restok_bahan
-        ORDER BY r.Id_restok_bahan DESC
-      ");
+  SELECT
+    r.*,
+    COALESCE(SUM(bm.Bahan_masuk),0) AS bahan_masuk_total
+  FROM restok_bahan_outlet r
+  LEFT JOIN bahan_masuk bm ON bm.Id_restok_bahan = r.Id_restok_bahan
+  WHERE r.Id_outlet = $id_outlet
+  GROUP BY r.Id_restok_bahan
+  ORDER BY r.Id_restok_bahan DESC
+");
+
 
       while ($a = mysqli_fetch_assoc($qAjukan)) {
         $masuk = (int)$a['bahan_masuk_total'];
@@ -342,25 +343,24 @@ body {
         <td data-label="Bahan Masuk"><?= $masuk > 0 ? $masuk : '-'; ?></td>
         <td data-label="Status"><?= htmlspecialchars($a['Status'] ?? '-'); ?></td>
         <td data-label="Aksi">
-          <?php if (($a['Status'] ?? '') === 'Menunggu' || ($a['Status'] ?? '') === 'Ditolak'): ?>
-            <button class="tombol-edit" onclick="editAjukan(<?= (int)$a['Id_restok_bahan']; ?>)">
-              <i class="fa-solid fa-pen-to-square"></i> Edit
-            </button>
-            <button class="tombol-hapus" onclick="hapusAjukan(<?= (int)$a['Id_restok_bahan']; ?>)">
-              <i class="fa-solid fa-trash"></i> Hapus
-            </button>
-          <?php elseif (($a['Status'] ?? '') === 'Disetujui' || ($a['Status'] ?? '') === 'Dikirim'): ?>
-            <button class="tombol-selesai" onclick="bukaModalKonfirmasi(<?= (int)$a['Id_restok_bahan']; ?>)">
-              <i class="fa-solid fa-circle-check"></i> Konfirmasi
-            </button>
-          <?php elseif (($a['Status'] ?? '') === 'Selesai'): ?>
-            <button class="tombol-hapus" onclick="hapusAjukan(<?= (int)$a['Id_restok_bahan']; ?>)">
-              <i class="fa-solid fa-trash"></i> Hapus
-            </button>
-          <?php else: ?>
-            -
-          <?php endif; ?>
-        </td>
+  <?php if (($a['Status'] ?? '') === 'Menunggu' || ($a['Status'] ?? '') === 'Ditolak'): ?>
+    <button class="tombol-edit" onclick="editAjukan(<?= (int)$a['Id_restok_bahan']; ?>)">
+      <i class="fa-solid fa-pen-to-square"></i> Edit
+    </button>
+    <button class="tombol-hapus" onclick="hapusAjukan(<?= (int)$a['Id_restok_bahan']; ?>)">
+      <i class="fa-solid fa-trash"></i> Hapus
+    </button>
+  <?php elseif (($a['Status'] ?? '') === 'Disetujui' || ($a['Status'] ?? '') === 'Dikirim'): ?>
+    <button class="tombol-selesai" onclick="bukaModalKonfirmasi(<?= (int)$a['Id_restok_bahan']; ?>)">
+      <i class="fa-solid fa-circle-check"></i> Konfirmasi
+    </button>
+  <?php elseif (($a['Status'] ?? '') === 'Selesai'): ?>
+    -
+  <?php else: ?>
+    -
+  <?php endif; ?>
+</td>
+
       </tr>
       <?php } ?>
     </tbody>
@@ -385,10 +385,8 @@ body {
         }
         ?>
       </select>
-
-      <input type="number" id="harga" name="harga" placeholder="Harga" readonly>
+    
       <input type="number" min="1" id="jumlah_restok" name="jumlah_restok" placeholder="Jumlah restok" required>
-      <input type="number" id="total_harga" name="total_harga" placeholder="Total harga" readonly>
 
       <button type="submit">Simpan</button>
     </form>
@@ -438,18 +436,9 @@ $(document).ready(function () {
     }
   });
 
+  // HAPUS LOGIKA HARGA & TOTAL HARGA
   $('#id_barang').on('change', function(){
-    const selected = $(this).find(':selected');
-    const harga = selected.data('harga') || 0;
-    $('#harga').val(harga);
     $('#jumlah_restok').val('');
-    $('#total_harga').val('');
-  });
-
-  $('#jumlah_restok').on('input', function(){
-    const jml = parseInt($('#jumlah_restok').val()) || 0;
-    const harga = parseInt($('#harga').val()) || 0;
-    $('#total_harga').val(jml * harga);
   });
 
   $('#formAjukan').on('submit', function(e){
@@ -491,9 +480,7 @@ function editAjukan(id) {
     $('#judulModal').text('Edit Pengajuan Restok');
     $('#id_ajukan').val(obj.id);
     $('#id_barang').val(obj.id_barang).change();
-    $('#harga').val(obj.harga);
     $('#jumlah_restok').val(obj.jumlah_restok);
-    $('#total_harga').val(obj.total_harga);
     $('#modalAjukan').css('display','flex');
   });
 }

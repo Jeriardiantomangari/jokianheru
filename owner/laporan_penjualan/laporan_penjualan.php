@@ -619,16 +619,33 @@ if ($jenis_laporan == 'harian') {
                 <?php else: ?>
                     <div class="baris-filter">
                         <div>
-                            <label>Bulan</label>
-                            <select name="bulan_bulanan">
-                                <?php for($b=1; $b<=12; $b++):
-                                    $val = str_pad($b,2,'0',STR_PAD_LEFT); ?>
-                                    <option value="<?= $val; ?>" <?= $bulan_bulanan==$val?'selected':'' ?>>
-                                        <?= $val; ?>
-                                    </option>
-                                <?php endfor; ?>
-                            </select>
-                        </div>
+    <label>Bulan</label>
+    <select name="bulan_bulanan">
+        <?php 
+        $nama_bulan = [
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
+        ];
+
+        for($b = 1; $b <= 12; $b++):
+            $val = str_pad($b, 2, '0', STR_PAD_LEFT);
+        ?>
+            <option value="<?= $val; ?>" <?= $bulan_bulanan == $val ? 'selected' : '' ?>>
+                <?= $nama_bulan[$b]; ?>
+            </option>
+        <?php endfor; ?>
+    </select>
+</div>
                         <div>
                             <label>Tahun</label>
                             <input type="number" name="tahun_bulanan"
@@ -812,16 +829,16 @@ let datasets = [];
 if (jenisLaporan === 'harian') {
     const ds = chartDatasetsRaw[0] || { label: 'Total Penjualan', data: [] };
 
-    const bgColors = ds.data.map((_, idx) => baseColors[idx % baseColors.length].bg);
-    const borderColors = ds.data.map((_, idx) => baseColors[idx % baseColors.length].border);
-
     datasets.push({
         label: ds.label,
         data: ds.data,
-        backgroundColor: bgColors,
-        borderColor: borderColors,
-        borderWidth: 1,
-        borderRadius: 0,
+        borderColor: ds.data.map((_, idx) => baseColors[idx % baseColors.length].border),
+        backgroundColor: ds.data.map((_, idx) => baseColors[idx % baseColors.length].bg),
+        borderWidth: 2,
+        fill: false,
+        tension: 0.3,
+        pointRadius: 4,
+        pointHoverRadius: 6,
     });
 
 } else {
@@ -830,17 +847,20 @@ if (jenisLaporan === 'harian') {
         return {
             label: ds.label,
             data: ds.data,
-            backgroundColor: color.bg,
             borderColor: color.border,
-            borderWidth: 1,
-            borderRadius: 0,
+            backgroundColor: color.bg,
+            borderWidth: 2,
+            fill: false,
+            tension: 0.3,
+            pointRadius: 4,
+            pointHoverRadius: 6,
         };
     });
 }
 
 const ctx = document.getElementById('chartPenjualan').getContext('2d');
 new Chart(ctx, {
-    type: 'bar',
+    type: 'line',
     data: { labels: chartLabels, datasets: datasets },
     options: {
         responsive: true,
@@ -866,7 +886,6 @@ new Chart(ctx, {
         },
         scales: {
             x: {
-                stacked: false,
                 ticks: { autoSkip: false, maxRotation: 0, minRotation: 0 }
             },
             y: {
@@ -880,68 +899,6 @@ new Chart(ctx, {
         }
     }
 });
-
-/* =========================
-   MODE DETAIL: hanya 1 outlet tampil + tombol jadi Kembali
-========================= */
-function openOutletDetail(idOutlet) {
-    // tutup semua detail
-    document.querySelectorAll('tr[id^="detail-row-"]').forEach(r => r.style.display = 'none');
-
-    // sembunyikan semua summary outlet
-    document.querySelectorAll('tr[id^="summary-row-"]').forEach(r => r.style.display = 'none');
-
-    // tampilkan summary outlet yang dipilih
-    const summaryRow = document.getElementById('summary-row-' + idOutlet);
-    if (summaryRow) summaryRow.style.display = 'table-row';
-
-    // tampilkan detail outlet yang dipilih
-    const detailRow = document.getElementById('detail-row-' + idOutlet);
-    if (detailRow) detailRow.style.display = 'table-row';
-
-    // ubah semua tombol jadi Lihat, lalu tombol yang dipilih jadi Kembali
-    document.querySelectorAll('button[id^="btn-toggle-"]').forEach(btn => btn.textContent = 'Lihat');
-    const btn = document.getElementById('btn-toggle-' + idOutlet);
-    if (btn) btn.textContent = 'Kembali';
-
-    // sembunyikan grand total saat mode detail
-    const grandRow = document.getElementById('grand-total-row');
-    if (grandRow) grandRow.style.display = 'none';
-
-    // opsional: scroll ke detail
-    if (detailRow) detailRow.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function closeOutletDetail(idOutlet) {
-    // tampilkan semua summary outlet
-    document.querySelectorAll('tr[id^="summary-row-"]').forEach(r => r.style.display = 'table-row');
-
-    // tutup semua detail
-    document.querySelectorAll('tr[id^="detail-row-"]').forEach(r => r.style.display = 'none');
-
-    // tombol kembali ke Lihat
-    document.querySelectorAll('button[id^="btn-toggle-"]').forEach(btn => btn.textContent = 'Lihat');
-
-    // tampilkan grand total lagi
-    const grandRow = document.getElementById('grand-total-row');
-    if (grandRow) grandRow.style.display = 'table-row';
-
-    // scroll balik ke summary outlet
-    const summaryRow = document.getElementById('summary-row-' + idOutlet);
-    if (summaryRow) summaryRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
-function toggleOutletDetail(idOutlet){
-    const detailRow = document.getElementById('detail-row-' + idOutlet);
-    if(!detailRow) return;
-
-    const isOpen = (detailRow.style.display === 'table-row');
-    if (isOpen) {
-        closeOutletDetail(idOutlet);
-    } else {
-        openOutletDetail(idOutlet);
-    }
-}
 </script>
 
 </body>

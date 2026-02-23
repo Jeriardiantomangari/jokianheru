@@ -286,22 +286,26 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
 
   <table id="tabel-barang" class="tabel-barang">
     <thead>
-      <tr>
-        <th>No.</th>
-        <th>Nama Barang</th>
-        <th>Kategori</th>
-        <th>Harga</th>
-        <th>Min Stok Gudang</th>
-        <th>Min Stok Outlet</th>
-        <th>Aksi</th>
-      </tr>
-    </thead>
+  <tr>
+    <th>No.</th>
+    <th>Nama Barang</th>
+    <th>Kategori</th>
+    <th>Harga</th>
+    <th>Min Stok Gudang</th>
+    <th>Max Stok Gudang</th>
+    <th>Min Stok Outlet</th>
+    <th>Max Stok Outlet</th>
+    <th>Aksi</th>
+  </tr>
+   </thead>
     <tbody>
 <?php
 $no = 1;
 // Query untuk mengambil data barang dan nama kategori dengan JOIN
 $query = mysqli_query($conn, "
-    SELECT b.id_barang, b.nama_barang, k.nama_kategori, b.harga, b.minimal_stok_gudang, b.minimal_stok_outlet
+    SELECT b.id_barang, b.nama_barang, k.nama_kategori, b.harga, 
+           b.minimal_stok_gudang, b.maksimal_stok_gudang,
+           b.minimal_stok_outlet, b.maksimal_stok_outlet
     FROM barang b
     LEFT JOIN kategori k ON b.id_kategori = k.id_kategori
     ORDER BY b.id_barang ASC
@@ -314,8 +318,11 @@ while ($row = mysqli_fetch_assoc($query)) {
     <td data-label="Nama Barang"><?= htmlspecialchars($row['nama_barang']); ?></td>
    <td data-label="Kategori"><?= htmlspecialchars($row['nama_kategori'] ?? 'Tidak ada kategori'); ?></td>
     <td data-label="Harga">Rp <?= number_format($row['harga'], 2, ',', '.'); ?></td>
-    <td data-label="Minimal Stok Gudang"><?= $row['minimal_stok_gudang']; ?></td>
-    <td data-label="Minimal Stok Outlet"><?= $row['minimal_stok_outlet']; ?></td>
+  <td data-label="Min Stok Gudang"><?= (int)$row['minimal_stok_gudang']; ?></td>
+  <td data-label="Max Stok Gudang"><?= (int)$row['maksimal_stok_gudang']; ?></td>
+
+  <td data-label="Min Stok Outlet"><?= (int)$row['minimal_stok_outlet']; ?></td>
+  <td data-label="Max Stok Outlet"><?= (int)$row['maksimal_stok_outlet']; ?></td>
     <td data-label="Aksi">
         <button class="tombol tombol-edit" onclick="editBarang(<?= $row['id_barang']; ?>)">
             <i class="fa-solid fa-pen-to-square"></i> Edit
@@ -355,9 +362,11 @@ while ($row = mysqli_fetch_assoc($query)) {
 
       <input type="number" min="0" name="harga" id="harga" placeholder="Harga" required>
 
-      <input type="number" min="0" name="minimal_stok_gudang" id="minimal_stok_gudang" placeholder="Minimal Stok Gudang" required>
+     <input type="number" min="0" name="minimal_stok_gudang" id="minimal_stok_gudang" placeholder="Minimal Stok Gudang" required>
+<input type="number" min="0" name="maksimal_stok_gudang" id="maksimal_stok_gudang" placeholder="Maksimal Stok Gudang" required>
 
-      <input type="number" min="0" name="minimal_stok_outlet" id="minimal_stok_outlet" placeholder="Minimal Stok Outlet" required>
+<input type="number" min="0" name="minimal_stok_outlet" id="minimal_stok_outlet" placeholder="Minimal Stok Outlet" required>
+<input type="number" min="0" name="maksimal_stok_outlet" id="maksimal_stok_outlet" placeholder="Maksimal Stok Outlet" required>
 
       <button type="submit" id="simpanBarang">Simpan</button>
     </form>
@@ -371,7 +380,7 @@ $(document).ready(function () {
     "pageLength": 10,
     "lengthMenu": [5, 10, 25, 50],
     "columnDefs": [{
-      "orderable": false, "targets": 6
+      "orderable": false, "targets": 8
     }],
     "language": {
       "emptyTable": "Tidak ada data tersedia",
@@ -423,7 +432,9 @@ function editBarang(id) {
     $('#kategori').val(obj.id_kategori);
     $('#harga').val(obj.harga);
     $('#minimal_stok_gudang').val(obj.minimal_stok_gudang);
+    $('#maksimal_stok_gudang').val(obj.maksimal_stok_gudang);
     $('#minimal_stok_outlet').val(obj.minimal_stok_outlet);
+    $('#maksimal_stok_outlet').val(obj.maksimal_stok_outlet);
     $('#modalBarang').css('display','flex');
   });
 }
@@ -478,14 +489,14 @@ $('.tombol-cetak').click(function(){
 
   let headers = [];
   $('#tabel-barang thead th').each(function(index){
-    if(index !== 6) headers.push($(this).text());
+    if(index !== 8) headers.push($(this).text());
   });
 
   let data = [];
   $('#tabel-barang tbody tr').each(function(){
     let rowData=[];
     $(this).find('td').each(function(index){
-      if(index !== 6) rowData.push($(this).text());
+      if(index !== 8) rowData.push($(this).text());
     });
     data.push(rowData);
   });

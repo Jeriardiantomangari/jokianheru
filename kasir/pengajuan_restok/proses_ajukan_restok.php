@@ -74,27 +74,17 @@ if (($_POST['aksi'] ?? '') === 'ambil') {
     }
 
     $id_barang = (int)$row['id_barang'];
-    $harga = 0;
-    $sqlH = "SELECT harga FROM barang WHERE id_barang = ? LIMIT 1";
-    $stmtH = mysqli_prepare($conn, $sqlH);
-    mysqli_stmt_bind_param($stmtH, "i", $id_barang);
-    mysqli_stmt_execute($stmtH);
-    $resH = mysqli_stmt_get_result($stmtH);
-    if ($resH && ($h = mysqli_fetch_assoc($resH))) $harga = (int)$h['harga'];
-
     $jumlah = (int)$row['Jumlah_restok'];
 
     echo json_encode([
-        'id' => (int)$row['Id_restok_bahan'],
-        'id_barang' => $id_barang,
-        'id_stok_outlet' => (int)$row['Id_stok_outlet'],
-        'nama_barang' => $row['Nama_barang'],
-        'harga' => (float)$harga,
-        'jumlah_restok' => $jumlah,
-        'total_harga' => (float)($harga * $jumlah),
-        'status' => $row['Status']
-    ]);
-    exit;
+    'id' => (int)$row['Id_restok_bahan'],
+    'id_barang' => $id_barang,
+    'id_stok_outlet' => (int)$row['Id_stok_outlet'],
+    'nama_barang' => $row['Nama_barang'],
+    'jumlah_restok' => $jumlah,
+    'status' => $row['Status']
+]);
+exit;
 }
 
 /*  AMBIL KONFIRMASI  */

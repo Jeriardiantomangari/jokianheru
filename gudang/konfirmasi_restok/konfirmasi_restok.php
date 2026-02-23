@@ -232,23 +232,22 @@ body{
         <td data-label="Status"><?= htmlspecialchars($row['Status'] ?? '-'); ?></td>
 
         <td data-label="Aksi">
-          <?php if (($row['Status'] ?? '') === 'Menunggu'): ?>
-            <button class="tombol tombol-setuju" onclick="setujui(<?= (int)$row['Id_restok_bahan']; ?>)">
-              <i class="fa-solid fa-check"></i> Setujui
-            </button>
-            <button class="tombol tombol-tolak" onclick="tolak(<?= (int)$row['Id_restok_bahan']; ?>)">
-              <i class="fa-solid fa-xmark"></i> Tolak
-            </button>
+  <?php if (($row['Status'] ?? '') === 'Menunggu'): ?>
+    <button class="tombol tombol-setuju" onclick="setujui(<?= (int)$row['Id_restok_bahan']; ?>)">
+      <i class="fa-solid fa-check"></i> Setujui
+    </button>
+    <button class="tombol tombol-tolak" onclick="tolak(<?= (int)$row['Id_restok_bahan']; ?>)">
+      <i class="fa-solid fa-xmark"></i> Tolak
+    </button>
 
-          <?php elseif (($row['Status'] ?? '') === 'Selesai'): ?>
-            <button class="tombol tombol-hapus" onclick="hapus(<?= (int)$row['Id_restok_bahan']; ?>)">
-              <i class="fa-solid fa-trash"></i> Hapus
-            </button>
+  <?php elseif (($row['Status'] ?? '') === 'Selesai'): ?>
+    -
 
-          <?php else: ?>
-            -
-          <?php endif; ?>
-        </td>
+  <?php else: ?>
+    -
+  <?php endif; ?>
+</td>
+
       </tr>
       <?php } ?>
     </tbody>

@@ -370,7 +370,7 @@ tr.row-hijau i{
               $peringatan = "Banyak";
               $kelasRow   = "row-hijau";
           } else {
-              $peringatan = "Medium";
+              $peringatan = "sedang";
               $kelasRow   = "row-kuning";
           }
       ?>

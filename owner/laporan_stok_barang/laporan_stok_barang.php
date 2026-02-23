@@ -27,7 +27,7 @@ if ($qOutlet) {
 ========================= */
 $sqlLaporan = "
     SELECT
-        COALESCE(o.nama_outlet, '(Belum terhubung)') AS nama_outlet,
+        o.nama_outlet AS nama_outlet,
         b.nama_barang,
         k.nama_kategori AS nama_kategori,
         b.harga,
@@ -35,26 +35,14 @@ $sqlLaporan = "
         COALESCE(sg.Jumlah_stok, 0) AS stok_gudang,
         COALESCE(so.Jumlah_stok, 0) AS stok_outlet
     FROM stok_outlet so
+    JOIN outlet o
+        ON o.id_outlet = so.id_outlet
     JOIN barang b
         ON b.id_barang = so.Id_barang
     LEFT JOIN kategori k
         ON k.id_kategori = b.id_kategori
     LEFT JOIN stok_gudang sg
         ON sg.Id_barang = b.id_barang
-    LEFT JOIN (
-        SELECT r1.Id_stok_outlet, r1.Id_outlet
-        FROM restok_bahan_outlet r1
-        JOIN (
-            SELECT Id_stok_outlet, MAX(Id_restok_bahan) AS max_id
-            FROM restok_bahan_outlet
-            GROUP BY Id_stok_outlet
-        ) r2
-          ON r2.Id_stok_outlet = r1.Id_stok_outlet
-         AND r2.max_id = r1.Id_restok_bahan
-    ) map
-        ON map.Id_stok_outlet = so.Id_stok_outlet
-    LEFT JOIN outlet o
-        ON o.id_outlet = map.Id_outlet
     WHERE 1=1
 ";
 
@@ -98,14 +86,18 @@ $sqlRestok = "
     r.Id_stok_outlet,
     COALESCE(so.Nama_barang, r.Nama_barang) AS nama_barang,
     r.Jumlah_restok,
+    COALESCE(bm.Bahan_masuk, 0) AS barang_masuk,
     r.Status
   FROM restok_bahan_outlet r
   LEFT JOIN outlet o
     ON o.id_outlet = r.Id_outlet
   LEFT JOIN stok_outlet so
     ON so.Id_stok_outlet = r.Id_stok_outlet
+  LEFT JOIN bahan_masuk bm
+    ON bm.Id_restok_bahan = r.Id_restok_bahan
   WHERE 1=1
 ";
+
 
 $paramsR = [];
 $typesR  = "";
@@ -223,6 +215,26 @@ body{
   color:#b71c1c;
   margin:0 0 10px 0;
   font-size:14px;
+}
+
+.tombol{
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  color:white;
+  font-size:11px;
+  transition:.25s;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+}
+.tombol:hover{
+  transform:translateY(-1px);
+  box-shadow:0 2px 6px rgba(0,0,0,.18);
+}
+.tombol-hapus{
+  background:#c62828;
 }
 
 /* ===== LEGEND WARNA STOK ===== */
@@ -400,8 +412,10 @@ body{
         <th>ID Restok</th>
         <th>Outlet</th>
         <th>Nama Barang</th>
-        <th>Jumlah</th>
+        <th>Jumlah Restok</th>
+        <th>Jml Barang Masuk</th>
         <th>Status</th>
+        <th>Aksi</th>
       </tr>
     </thead>
     <tbody>
@@ -417,7 +431,18 @@ body{
           <td data-label="Outlet"><?= htmlspecialchars($r['nama_outlet']); ?></td>
           <td data-label="Nama Barang"><?= htmlspecialchars($r['nama_barang'] ?? '-'); ?></td>
           <td data-label="Jumlah"><?= (int)$r['Jumlah_restok']; ?></td>
-          <td data-label="Status"><span class="badge <?= $cls; ?>"><?= htmlspecialchars($r['Status'] ?? '-'); ?></span></td>
+         <td data-label="Barang Masuk"><?= (int)($r['barang_masuk'] ?? 0); ?></td>
+<td data-label="Status"><span class="badge <?= $cls; ?>"><?= htmlspecialchars($r['Status'] ?? '-'); ?></span></td>
+<td data-label="Aksi">
+  <?php if (strtolower(trim($r['Status'] ?? '')) === 'selesai'): ?>
+    <button class="tombol tombol-hapus" onclick="hapusRestokOwner(<?= (int)$r['Id_restok_bahan']; ?>)">
+      Hapus
+    </button>
+  <?php else: ?>
+    -
+  <?php endif; ?>
+</td>
+
         </tr>
       <?php endforeach; ?>
     </tbody>
@@ -447,9 +472,11 @@ $(document).ready(function () {
   });
 
   // ===== DATATABLES: RESTOK =====
+
   $('#tabel-restok').DataTable({
-    pageLength: 10,
-    lengthMenu: [5, 10, 25, 50],
+  pageLength: 10,
+  lengthMenu: [5, 10, 25, 50],
+  columnDefs: [{ orderable: false, targets: 6 }],
     language: {
       emptyTable: "Tidak ada data restok",
       info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
@@ -615,4 +642,12 @@ $(document).ready(function () {
 
 
 });
+function hapusRestokOwner(id){
+  if(!confirm('Hapus data restok ini?')) return;
+  $.post('proses_hapus_restok_owner.php', { id:id }, function(res){
+    alert(res);
+    location.reload();
+  });
+}
+
 </script>
