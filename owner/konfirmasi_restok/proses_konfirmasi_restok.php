@@ -53,23 +53,19 @@ if ($aksi === 'setujui') {
     exit;
 
 } elseif ($aksi === 'tolak') {
-    if (!in_array($status_sekarang, ['Menunggu', 'Disetujui'])) {
-        echo "Pengajuan tidak dapat ditolak (status sekarang: $status_sekarang).";
-        exit;
-    }
+  $catatan = trim($_POST['catatan'] ?? '');
+  $catatan = substr($catatan, 0, 255);
 
-    $u = mysqli_query($conn, "
-        UPDATE restok_barang
-        SET Status = 'Ditolak'
-        WHERE Id_restok_barang = $id
-    ");
+  if ($id <= 0) exit('ID tidak valid');
+  if (mb_strlen($catatan) < 3) exit('Catatan wajib diisi');
 
-    if ($u && mysqli_affected_rows($conn) > 0) {
-        echo "Pengajuan restok ditolak owner.";
-    } else {
-        echo "Gagal menolak pengajuan.";
-    }
-    exit;
+  $stmt = $conn->prepare("UPDATE restok_barang SET Status='Ditolak', Catatan=? WHERE Id_restok_barang=?");
+  $stmt->bind_param("si", $catatan, $id);
+  $stmt->execute();
+
+  echo $stmt->affected_rows > 0 ? 'Pengajuan berhasil ditolak.' : 'Tidak ada perubahan.';
+  exit;
+
 
 } elseif ($aksi === 'hapus') {
 

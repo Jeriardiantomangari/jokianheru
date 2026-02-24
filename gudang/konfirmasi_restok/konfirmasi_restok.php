@@ -109,6 +109,61 @@ body{
 .tabel-ajukan tr:nth-child(even){
   background:#fffdf7;}
 
+
+  .modal{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.45);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  z-index:9999;
+}
+.modal.show{ display:flex; }
+
+.modal-box{
+  width:min(520px, 96vw);
+  background:#fff;
+  border-radius:12px;
+  padding:16px;
+  box-shadow:0 8px 30px rgba(0,0,0,.2);
+  text-align:left;
+}
+.modal-box h3{
+  margin:0 0 8px;
+  color:#b71c1c;
+}
+#tolak_catatan{
+  width:100%;
+  min-height:110px;
+  resize:vertical;
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid #ffcc80;
+  outline:none;
+  font-family:Arial,sans-serif;
+  font-size:13px;
+}
+#tolak_catatan:focus{
+  border-color:#fb8c00;
+  box-shadow:0 0 0 2px rgba(251,140,0,.15);
+}
+.modal-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:12px;
+}
+.btn-secondary, .btn-danger{
+  border:none;
+  border-radius:8px;
+  padding:8px 12px;
+  cursor:pointer;
+  font-size:12px;
+}
+.btn-secondary{ background:#e0e0e0; }
+.btn-danger{ background:#c62828; color:#fff; }
+
 @media screen and (max-width: 768px) {
   .konten-utama {
     margin-left: 0;
@@ -179,40 +234,42 @@ body{
   <table id="tabel-ajukan-outlet" class="tabel-ajukan">
     <thead>
       <tr>
-        <th>No.</th>
-        <th>Outlet</th>
-        <th>Nama Barang</th>
-        <th>Harga Satuan</th>
-        <th>Jumlah Restok</th>
-        <th>Total Harga</th>
-        <th>Bahan Masuk</th>
-        <th>Status</th>
-        <th>Aksi</th>
+<th>No.</th>
+<th>Outlet</th>
+<th>Nama Barang</th>
+<th>Harga Satuan</th>
+<th>Jumlah Restok</th>
+<th>Total Harga</th>
+<th>Bahan Masuk</th>
+<th>Status</th>
+<th>Catatan</th>
+<th>Aksi</th>
       </tr>
     </thead>
     <tbody>
       <?php
       $no = 1;
-      $sql = "
-        SELECT
-          r.Id_restok_bahan,
-          r.Id_outlet,
-          r.Id_stok_outlet,
-          r.Nama_barang,
-          r.Jumlah_restok,
-          r.Status,
-          o.nama_outlet,
-          b.harga AS Harga,
-          (b.harga * r.Jumlah_restok) AS Total_harga,
-          COALESCE(SUM(bm.Bahan_masuk), 0) AS bahan_masuk
-        FROM restok_bahan_outlet r
-        JOIN outlet o ON o.id_outlet = r.Id_outlet
-        LEFT JOIN stok_outlet so ON so.Id_stok_outlet = r.Id_stok_outlet
-        LEFT JOIN barang b ON b.id_barang = so.Id_barang
-        LEFT JOIN bahan_masuk bm ON bm.Id_restok_bahan = r.Id_restok_bahan
-        GROUP BY r.Id_restok_bahan
-        ORDER BY r.Id_restok_bahan DESC
-      ";
+     $sql = "
+  SELECT
+    r.Id_restok_bahan,
+    r.Id_outlet,
+    r.Id_stok_outlet,
+    r.Nama_barang,
+    r.Jumlah_restok,
+    r.Status,
+    r.Catatan,
+    o.nama_outlet,
+    b.harga AS Harga,
+    (b.harga * r.Jumlah_restok) AS Total_harga,
+    COALESCE(SUM(bm.Bahan_masuk), 0) AS bahan_masuk
+  FROM restok_bahan_outlet r
+  JOIN outlet o ON o.id_outlet = r.Id_outlet
+  LEFT JOIN stok_outlet so ON so.Id_stok_outlet = r.Id_stok_outlet
+  LEFT JOIN barang b ON b.id_barang = so.Id_barang
+  LEFT JOIN bahan_masuk bm ON bm.Id_restok_bahan = r.Id_restok_bahan
+  GROUP BY r.Id_restok_bahan
+  ORDER BY r.Id_restok_bahan DESC
+";
 
       $q = mysqli_query($conn, $sql);
       while ($row = mysqli_fetch_assoc($q)) {
@@ -230,6 +287,7 @@ body{
         <td data-label="Total">Rp <?= number_format($total, 2, ',', '.'); ?></td>
         <td data-label="Bahan Masuk"><?= ($masuk > 0) ? $masuk : '-'; ?></td>
         <td data-label="Status"><?= htmlspecialchars($row['Status'] ?? '-'); ?></td>
+        <td data-label="Catatan"><?= htmlspecialchars($row['Catatan'] ?? '-'); ?></td>
 
         <td data-label="Aksi">
   <?php if (($row['Status'] ?? '') === 'Menunggu'): ?>
@@ -254,28 +312,41 @@ body{
   </table>
 </div>
 
+<!-- Modal Tolak -->
+<div id="modalTolak" class="modal">
+  <div class="modal-box">
+    <h3>Alasan Penolakan</h3>
+    <p style="margin:6px 0 12px;color:#666;font-size:13px;">
+      Tulis catatan/alasan kenapa pengajuan ini ditolak.
+    </p>
+
+    <input type="hidden" id="tolak_id" value="">
+    <textarea id="tolak_catatan" placeholder="Contoh: Stok gudang belum tersedia / data barang tidak sesuai..." maxlength="255"></textarea>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModalTolak()">Batal</button>
+      <button class="btn-danger" onclick="submitTolak()">Kirim Tolak</button>
+    </div>
+  </div>
+</div>
+
 <script>
 $(document).ready(function () {
   $('#tabel-ajukan-outlet').DataTable({
     pageLength: 10,
     lengthMenu: [5, 10, 25, 50],
-    columnDefs: [{ orderable: false, targets: 8 }],
-       "language": {
-      "emptyTable": "Belum ada pengajuan restok gudang",
-      "info": "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-      "infoEmpty": "Menampilkan 0 sampai 0 dari 0 data",
-      "infoFiltered": "(disaring dari _MAX_ data total)",
-      "lengthMenu": "Tampilkan _MENU_ data",
-      "loadingRecords": "Memuat...",
-      "processing": "Sedang diproses...",
-      "search": "Cari:",
-      "zeroRecords": "Tidak ditemukan data yang sesuai",
-      "paginate": {
-        "first": "Pertama",
-        "last": "Terakhir",
-        "next": "Berikutnya",
-        "previous": "Sebelumnya"
-      }
+    columnDefs: [{ orderable: false, targets: 9 }],
+    language: {
+      emptyTable: "Belum ada pengajuan restok gudang",
+      info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+      infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
+      infoFiltered: "(disaring dari _MAX_ data total)",
+      lengthMenu: "Tampilkan _MENU_ data",
+      loadingRecords: "Memuat...",
+      processing: "Sedang diproses...",
+      search: "Cari:",
+      zeroRecords: "Tidak ditemukan data yang sesuai",
+      paginate: { first:"Pertama", last:"Terakhir", next:"Berikutnya", previous:"Sebelumnya" }
     }
   });
 });
@@ -288,13 +359,51 @@ function setujui(id){
   });
 }
 
+/* ===== MODAL TOLAK ===== */
+function openModalTolak(id){
+  $('#tolak_id').val(id);
+  $('#tolak_catatan').val('');
+  $('#modalTolak').addClass('show');
+  setTimeout(() => $('#tolak_catatan').focus(), 50);
+}
+
+function closeModalTolak(){
+  $('#modalTolak').removeClass('show');
+}
+
 function tolak(id){
-  if(!confirm('Tolak pengajuan ini?')) return;
-  $.post('proses_konfirmasi_restok_outlet.php', {aksi:'tolak', id:id}, function(res){
+  openModalTolak(id);
+}
+
+function submitTolak(){
+  const id = $('#tolak_id').val();
+  const catatan = $('#tolak_catatan').val().trim();
+
+  if(catatan.length < 3){
+    alert('Catatan wajib diisi (minimal 3 karakter).');
+    return;
+  }
+
+  $.post('proses_konfirmasi_restok_outlet.php', {
+    aksi: 'tolak',
+    id: id,
+    catatan: catatan
+  }, function(res){
     alert(res);
+    closeModalTolak();
     location.reload();
   });
 }
+
+/* klik luar modal untuk tutup */
+$('#modalTolak').on('click', function(e){
+  if(e.target === this) closeModalTolak();
+});
+
+/* ESC untuk tutup */
+$(document).on('keydown', function(e){
+  if(e.key === 'Escape') closeModalTolak();
+});
 
 function hapus(id){
   if(!confirm('Hapus pengajuan ini? Data akan hilang dari daftar.')) return;

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Waktu pembuatan: 29 Jan 2026 pada 08.30
+-- Waktu pembuatan: 24 Feb 2026 pada 16.00
 -- Versi server: 8.4.3
 -- Versi PHP: 8.3.26
 
@@ -45,7 +45,7 @@ INSERT INTO `akun` (`id_akun`, `id_outlet`, `nama`, `username`, `password`, `rol
 (5, NULL, 'Nama Admin', 'admin', 'okedang', 'admin'),
 (8, NULL, 'abdul j', 'gudang', 'okedang', 'gudang'),
 (9, 1, 'ddfgdsg', 'kasir', 'okedang', 'kasir'),
-(10, 5, 'Jeri Arianto', 'kasir2', 'okedang', 'kasir');
+(12, 5, 'abdul ', 'kasir2', 'okedang', 'kasir');
 
 -- --------------------------------------------------------
 
@@ -66,16 +66,10 @@ CREATE TABLE `bahan_masuk` (
 --
 
 INSERT INTO `bahan_masuk` (`Id_bahan_masuk`, `Id_restok_bahan`, `Nama_barang`, `Jumlah_restok`, `Bahan_masuk`) VALUES
-(5, 6, 'ikan', 20, 20),
-(6, 7, 'ayam', 70, 70),
 (7, 8, 'ikan', 120, 120),
-(8, 10, 'ikan', 250, 250),
-(9, 9, 'garam', 5, 5),
 (13, 14, 'ayam', 1, 1),
-(14, 15, 'ayam', 2, 2),
-(16, 19, 'ikan', 30, 30),
-(17, 18, 'garam', 30, 30),
-(19, 17, 'garam', 3, 3);
+(23, 25, 'ikan', 20, 12),
+(24, 27, 'ayam', 2, 2);
 
 -- --------------------------------------------------------
 
@@ -90,17 +84,19 @@ CREATE TABLE `barang` (
   `kategori` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `harga` int NOT NULL,
   `minimal_stok_gudang` int NOT NULL,
-  `minimal_stok_outlet` int NOT NULL
+  `maksimal_stok_gudang` int NOT NULL DEFAULT '0',
+  `minimal_stok_outlet` int NOT NULL,
+  `maksimal_stok_outlet` int NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data untuk tabel `barang`
 --
 
-INSERT INTO `barang` (`id_barang`, `id_kategori`, `nama_barang`, `kategori`, `harga`, `minimal_stok_gudang`, `minimal_stok_outlet`) VALUES
-(1, 1, 'ayam', '1', 100000, 60, 60),
-(4, 1, 'ikan', '1', 200000, 60, 60),
-(5, 1, 'garam', '1', 3000, 60, 60);
+INSERT INTO `barang` (`id_barang`, `id_kategori`, `nama_barang`, `kategori`, `harga`, `minimal_stok_gudang`, `maksimal_stok_gudang`, `minimal_stok_outlet`, `maksimal_stok_outlet`) VALUES
+(1, 1, 'ayam', '1', 100000, 60, 100, 60, 100),
+(4, 1, 'ikan', '1', 200000, 60, 100, 60, 100),
+(5, 1, 'garam', '1', 3000, 60, 100, 60, 100);
 
 -- --------------------------------------------------------
 
@@ -116,6 +112,14 @@ CREATE TABLE `barang_masuk` (
   `Jumlah_restok` int DEFAULT NULL,
   `Barang_masuk` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data untuk tabel `barang_masuk`
+--
+
+INSERT INTO `barang_masuk` (`Id_barang_masuk`, `Id_restok_barang`, `Nama_barang`, `Harga`, `Jumlah_restok`, `Barang_masuk`) VALUES
+(15, 62, 'ayam', NULL, 12, 5),
+(16, 63, 'garam', NULL, 10, 10);
 
 -- --------------------------------------------------------
 
@@ -142,7 +146,9 @@ INSERT INTO `detail_penjualan` (`Id_detail_penjualan`, `id_penjualan`, `id_menu`
 (4, 4, 1, 'nasi ayam ', 15000.00, 1, 15000.00),
 (5, 5, 1, 'nasi ayam ', 15000.00, 1, 15000.00),
 (6, 6, 1, 'nasi ayam ', 15000.00, 3, 45000.00),
-(7, 7, 1, 'nasi ayam ', 15000.00, 55, 825000.00);
+(7, 7, 1, 'nasi ayam ', 15000.00, 55, 825000.00),
+(8, 8, 1, 'nasi ayam ', 15000.00, 4, 60000.00),
+(9, 9, 1, 'nasi ayam ', 15000.00, 3, 45000.00);
 
 -- --------------------------------------------------------
 
@@ -181,7 +187,7 @@ CREATE TABLE `menu` (
 --
 
 INSERT INTO `menu` (`id_menu`, `nama_menu`, `jenis`, `harga`, `gambar`) VALUES
-(1, 'nasi ayam ', 'Makanan', 15000, '1767032964_a8405aa0.jpeg');
+(1, 'nasi ayam ', 'Makanan', 15000, '1771946157_fd844d23.jpeg');
 
 -- --------------------------------------------------------
 
@@ -226,7 +232,9 @@ INSERT INTO `penjualan` (`id_penjualan`, `id_outlet`, `id_kasir`, `tanggal`, `to
 (4, 1, 9, '2026-01-03 06:02:19', 15000),
 (5, 5, 10, '2026-01-03 13:49:50', 15000),
 (6, 5, 10, '2026-01-03 13:58:41', 45000),
-(7, 5, 10, '2026-01-04 12:52:15', 825000);
+(7, 5, 10, '2026-01-04 12:52:15', 825000),
+(8, 1, 9, '2026-02-22 17:52:26', 60000),
+(9, 1, 9, '2026-02-24 15:13:49', 45000);
 
 -- --------------------------------------------------------
 
@@ -240,26 +248,20 @@ CREATE TABLE `restok_bahan_outlet` (
   `Id_stok_outlet` int NOT NULL,
   `Nama_barang` varchar(100) DEFAULT NULL,
   `Jumlah_restok` int DEFAULT NULL,
-  `Status` varchar(50) DEFAULT NULL
+  `Status` varchar(50) DEFAULT NULL,
+  `Catatan` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data untuk tabel `restok_bahan_outlet`
 --
 
-INSERT INTO `restok_bahan_outlet` (`Id_restok_bahan`, `Id_outlet`, `Id_stok_outlet`, `Nama_barang`, `Jumlah_restok`, `Status`) VALUES
-(6, 1, 4, 'ikan', 20, 'Selesai'),
-(7, 1, 3, 'ayam', 70, 'Selesai'),
-(8, 1, 4, 'ikan', 120, 'Selesai'),
-(9, 1, 5, 'garam', 5, 'Selesai'),
-(10, 1, 4, 'ikan', 250, 'Selesai'),
-(14, 1, 3, 'ayam', 1, 'Selesai'),
-(15, 5, 6, 'ayam', 2, 'Selesai'),
-(17, 1, 5, 'garam', 3, 'Selesai'),
-(18, 5, 7, 'garam', 30, 'Selesai'),
-(19, 5, 8, 'ikan', 30, 'Selesai'),
-(21, 1, 5, 'garam', 1, 'Menunggu'),
-(22, 5, 7, 'garam', 1, 'Dikirim');
+INSERT INTO `restok_bahan_outlet` (`Id_restok_bahan`, `Id_outlet`, `Id_stok_outlet`, `Nama_barang`, `Jumlah_restok`, `Status`, `Catatan`) VALUES
+(8, 1, 4, 'ikan', 120, 'Selesai', NULL),
+(14, 1, 3, 'ayam', 1, 'Selesai', NULL),
+(25, 1, 4, 'ikan', 20, 'Selesai', NULL),
+(27, 5, 6, 'ayam', 2, 'Selesai', 'stok belum tersedia'),
+(28, 5, 6, 'ayam', 3, 'Dikirim', 'egeg');
 
 -- --------------------------------------------------------
 
@@ -274,8 +276,17 @@ CREATE TABLE `restok_barang` (
   `Harga` decimal(10,2) DEFAULT NULL,
   `Jumlah_restok` int DEFAULT NULL,
   `Total_harga` decimal(10,2) DEFAULT NULL,
-  `Status` varchar(50) DEFAULT NULL
+  `Status` varchar(50) DEFAULT NULL,
+  `Catatan` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data untuk tabel `restok_barang`
+--
+
+INSERT INTO `restok_barang` (`Id_restok_barang`, `Id_stok_gudang`, `Nama_barang`, `Harga`, `Jumlah_restok`, `Total_harga`, `Status`, `Catatan`) VALUES
+(62, 5, 'ayam', 100000.00, 12, 1200000.00, 'Selesai', NULL),
+(63, 6, 'garam', 3000.00, 10, 30000.00, 'Selesai', NULL);
 
 -- --------------------------------------------------------
 
@@ -296,9 +307,9 @@ CREATE TABLE `stok_gudang` (
 --
 
 INSERT INTO `stok_gudang` (`Id_stok_gudang`, `id_barang`, `Nama_barang`, `Kategori`, `Jumlah_stok`) VALUES
-(4, 4, 'ikan', '1', 26),
-(5, 1, 'ayam', '1', 764),
-(6, 5, 'garam', '1', 31);
+(4, 4, 'ikan', '1', 6),
+(5, 1, 'ayam', '1', 752),
+(6, 5, 'garam', '1', 10);
 
 -- --------------------------------------------------------
 
@@ -320,12 +331,12 @@ CREATE TABLE `stok_outlet` (
 --
 
 INSERT INTO `stok_outlet` (`Id_stok_outlet`, `id_outlet`, `id_barang`, `Nama_barang`, `Kategori`, `Jumlah_stok`) VALUES
-(3, 1, 1, 'ayam', '1', 64),
-(4, 1, 4, 'ikan', '1', 330),
-(5, 1, 5, 'garam', '1', 8),
-(6, 5, 1, 'ayam', '1', 20),
-(7, 5, 5, 'garam', '1', 30),
-(8, 5, 4, 'ikan', '1', 30);
+(3, 1, 1, 'ayam', '1', 66),
+(4, 1, 4, 'ikan', '1', 342),
+(5, 1, 5, 'garam', '1', 29),
+(6, 5, 1, 'ayam', '1', 2),
+(7, 5, 5, 'garam', '1', 0),
+(8, 5, 4, 'ikan', '1', 0);
 
 --
 -- Indeks untuk tabel yang dibuang
@@ -431,67 +442,67 @@ ALTER TABLE `stok_outlet`
 -- AUTO_INCREMENT untuk tabel `akun`
 --
 ALTER TABLE `akun`
-  MODIFY `id_akun` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id_akun` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT untuk tabel `bahan_masuk`
 --
 ALTER TABLE `bahan_masuk`
-  MODIFY `Id_bahan_masuk` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `Id_bahan_masuk` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT untuk tabel `barang`
 --
 ALTER TABLE `barang`
-  MODIFY `id_barang` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_barang` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT untuk tabel `barang_masuk`
 --
 ALTER TABLE `barang_masuk`
-  MODIFY `Id_barang_masuk` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `Id_barang_masuk` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT untuk tabel `detail_penjualan`
 --
 ALTER TABLE `detail_penjualan`
-  MODIFY `Id_detail_penjualan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `Id_detail_penjualan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT untuk tabel `kategori`
 --
 ALTER TABLE `kategori`
-  MODIFY `id_kategori` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_kategori` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT untuk tabel `menu`
 --
 ALTER TABLE `menu`
-  MODIFY `id_menu` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_menu` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT untuk tabel `outlet`
 --
 ALTER TABLE `outlet`
-  MODIFY `id_outlet` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_outlet` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT untuk tabel `penjualan`
 --
 ALTER TABLE `penjualan`
-  MODIFY `id_penjualan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id_penjualan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT untuk tabel `restok_bahan_outlet`
 --
 ALTER TABLE `restok_bahan_outlet`
-  MODIFY `Id_restok_bahan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `Id_restok_bahan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT untuk tabel `restok_barang`
 --
 ALTER TABLE `restok_barang`
-  MODIFY `Id_restok_barang` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
+  MODIFY `Id_restok_barang` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
 
 --
 -- AUTO_INCREMENT untuk tabel `stok_gudang`

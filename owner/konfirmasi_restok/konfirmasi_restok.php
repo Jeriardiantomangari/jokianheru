@@ -127,6 +127,61 @@ body {
   background:#fffdf7;
 }
 
+.modal{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.45);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  z-index:9999;
+}
+.modal.show{ display:flex; }
+
+.modal-box{
+  width:min(520px, 96vw);
+  background:#fff;
+  border-radius:12px;
+  padding:16px;
+  box-shadow:0 8px 30px rgba(0,0,0,.2);
+  text-align:left;
+  border-top:4px solid #d32f2f;
+}
+.modal-box h3{
+  margin:0 0 8px;
+  color:#b71c1c;
+}
+#tolak_catatan{
+  width:100%;
+  min-height:110px;
+  resize:vertical;
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid #ffcc80;
+  outline:none;
+  font-family:Arial,sans-serif;
+  font-size:13px;
+}
+#tolak_catatan:focus{
+  border-color:#fb8c00;
+  box-shadow:0 0 0 2px rgba(251,140,0,.15);
+}
+.modal-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:12px;
+}
+.btn-secondary, .btn-danger{
+  border:none;
+  border-radius:8px;
+  padding:8px 12px;
+  cursor:pointer;
+  font-size:12px;
+}
+.btn-secondary{ background:#e0e0e0; }
+.btn-danger{ background:#c62828; color:#fff; }
+
 @media screen and (max-width: 768px) {
   .konten-utama {
     margin-left: 0;
@@ -208,6 +263,7 @@ body {
       <th>Total Harga</th>
       <th>Barang Masuk</th>
       <th>Status</th>
+       <th>Catatan</th>
       <th>Aksi</th>
     </tr>
   </thead>
@@ -237,12 +293,21 @@ body {
       <td data-label="Total Harga">Rp <?= number_format((float)$row['Total_harga'], 2, ',', '.'); ?></td>
       <td data-label="Barang Masuk"><?= ($bm > 0) ? $bm : '-'; ?></td>
       <td data-label="Status"><?= htmlspecialchars($row['Status']); ?></td>
+
+      <td data-label="Catatan">
+  <?php
+    $cat = trim($row['Catatan'] ?? '');
+    echo $cat !== '' ? htmlspecialchars($cat) : '-';
+  ?>
+</td>
+
       <td data-label="Aksi">
         <?php if ($row['Status'] === 'Menunggu'): ?>
           <button class="tombol tombol-setuju" onclick="setujui(<?= (int)$row['Id_restok_barang']; ?>)">
             <i class="fa-solid fa-check"></i> Setujui
           </button>
-          <button class="tombol tombol-tolak" onclick="tolak(<?= (int)$row['Id_restok_barang']; ?>)">
+
+         <button class="tombol tombol-tolak" onclick="tolak(<?= (int)$row['Id_restok_barang']; ?>)">
             <i class="fa-solid fa-xmark"></i> Tolak
           </button>
 
@@ -261,13 +326,31 @@ body {
 </table>
 </div>
 
+<!-- Modal Tolak -->
+<div id="modalTolak" class="modal">
+  <div class="modal-box">
+    <h3>Alasan Penolakan</h3>
+    <p style="margin:6px 0 12px;color:#666;font-size:13px;">
+      Tulis catatan kenapa pengajuan restok ditolak.
+    </p>
+
+    <input type="hidden" id="tolak_id" value="">
+    <textarea id="tolak_catatan" placeholder="Contoh: Barang tidak sesuai / stok masih cukup / nominal salah..." maxlength="255"></textarea>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModalTolak()">Batal</button>
+      <button class="btn-danger" onclick="submitTolak()">Kirim Tolak</button>
+    </div>
+  </div>
+</div>
+
 <script>
 $(document).ready(function () {
   $('#tabel-ajukan-gudang').DataTable({
     "pageLength": 10,
     "lengthMenu": [5, 10, 25, 50],
     "columnDefs": [{
-      "orderable": false, "targets": 7
+      "orderable": false, "targets": 8
     }],
     "language": {
       "emptyTable": "Belum ada pengajuan restok gudang",
@@ -298,12 +381,45 @@ function setujui(id){
 }
 
 function tolak(id){
-  if(!confirm('Tolak pengajuan restok ini?')) return;
-  $.post('proses_konfirmasi_restok.php', {aksi:'tolak', id:id}, function(res){
+  $('#tolak_id').val(id);
+  $('#tolak_catatan').val('');
+  $('#modalTolak').addClass('show');
+  setTimeout(() => $('#tolak_catatan').focus(), 50);
+}
+
+function closeModalTolak(){
+  $('#modalTolak').removeClass('show');
+}
+
+function submitTolak(){
+  const id = $('#tolak_id').val();
+  const catatan = $('#tolak_catatan').val().trim();
+
+  if(catatan.length < 3){
+    alert('Catatan wajib diisi (minimal 3 karakter).');
+    return;
+  }
+
+  $.post('proses_konfirmasi_restok.php', {
+    aksi: 'tolak',
+    id: id,
+    catatan: catatan
+  }, function(res){
     alert(res);
+    closeModalTolak();
     location.reload();
   });
 }
+
+/* klik luar modal untuk tutup */
+$('#modalTolak').on('click', function(e){
+  if(e.target === this) closeModalTolak();
+});
+
+/* ESC untuk tutup */
+$(document).on('keydown', function(e){
+  if(e.key === 'Escape') closeModalTolak();
+});
 
 function hapus(id){
   if(!confirm('Hapus pengajuan ini? Data akan hilang dari daftar.')) return;

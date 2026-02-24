@@ -138,23 +138,19 @@ try {
 
     // ---- AKSI TOLAK ----
     if ($aksi === 'tolak') {
+  $catatan = trim($_POST['catatan'] ?? '');
+  $catatan = substr($catatan, 0, 255);
 
-        if ($status !== 'Menunggu') {
-            echo "Pengajuan tidak bisa ditolak karena status sekarang: $status.";
-            exit;
-        }
+  if ($id <= 0) { exit('ID tidak valid'); }
+  if (mb_strlen($catatan) < 3) { exit('Catatan wajib diisi'); }
 
-        $u = mysqli_prepare($conn, "
-            UPDATE restok_bahan_outlet
-            SET Status = 'Ditolak'
-            WHERE Id_restok_bahan = ?
-        ");
-        mysqli_stmt_bind_param($u, "i", $id);
-        mysqli_stmt_execute($u);
+  $stmt = $conn->prepare("UPDATE restok_bahan_outlet SET Status='Ditolak', Catatan=? WHERE Id_restok_bahan=?");
+  $stmt->bind_param("si", $catatan, $id);
+  $stmt->execute();
 
-        echo "Pengajuan ditolak.";
-        exit;
-    }
+  echo $stmt->affected_rows > 0 ? 'Pengajuan berhasil ditolak.' : 'Tidak ada perubahan.';
+  exit;
+}
 
     // ---- AKSI HAPUS ----
     if ($aksi === 'hapus') {

@@ -320,7 +320,6 @@ if ($id_stok_gudang <= 0) {
     echo "Stok gudang untuk barang ini tidak ditemukan/gagal dibuat.";
     exit;
 }
-
 if ($id_ajukan > 0) {
     // cek status boleh edit
     $sqlCek = "SELECT Status FROM restok_barang WHERE Id_restok_barang = ? LIMIT 1";
@@ -335,12 +334,35 @@ if ($id_ajukan > 0) {
     }
 
     $row = mysqli_fetch_assoc($resCek);
-    if (!in_array(trim($row['Status']), ['Menunggu','Ditolak'], true)) {
-        echo "Pengajuan ini tidak dapat diubah (status sudah ".$row['Status'].")";
+    $statusLama = trim($row['Status'] ?? '');
+
+    if (!in_array($statusLama, ['Menunggu','Ditolak'], true)) {
+        echo "Pengajuan ini tidak dapat diubah (status sudah ".$statusLama.")";
         exit;
     }
 
-    // UPDATE (sekarang juga update Id_stok_gudang)
+    // kalau sebelumnya Ditolak, edit = ajukan ulang (reset catatan + status menunggu)
+    if ($statusLama === 'Ditolak') {
+        $sqlUpd = "UPDATE restok_barang
+                   SET Id_stok_gudang = ?,
+                       Nama_barang = ?,
+                       Harga = ?,
+                       Jumlah_restok = ?,
+                       Total_harga = ?,
+                       Status = 'Menunggu',
+                       Catatan = NULL
+                   WHERE Id_restok_barang = ?";
+        $stmtUpd = mysqli_prepare($conn, $sqlUpd);
+        mysqli_stmt_bind_param($stmtUpd, "isdiii",
+            $id_stok_gudang, $nama_barang, $harga, $jumlah_restok, $total_harga, $id_ajukan
+        );
+        mysqli_stmt_execute($stmtUpd);
+
+        echo "Pengajuan diubah dan diajukan ulang (Status: Menunggu).";
+        exit;
+    }
+
+    // kalau Menunggu, update biasa (status tetap Menunggu)
     $sqlUpd = "UPDATE restok_barang
                SET Id_stok_gudang = ?,
                    Nama_barang = ?,
@@ -349,12 +371,15 @@ if ($id_ajukan > 0) {
                    Total_harga = ?
                WHERE Id_restok_barang = ?";
     $stmtUpd = mysqli_prepare($conn, $sqlUpd);
-    mysqli_stmt_bind_param($stmtUpd, "isdiii", $id_stok_gudang, $nama_barang, $harga, $jumlah_restok, $total_harga, $id_ajukan);
+    mysqli_stmt_bind_param($stmtUpd, "isdiii",
+        $id_stok_gudang, $nama_barang, $harga, $jumlah_restok, $total_harga, $id_ajukan
+    );
     mysqli_stmt_execute($stmtUpd);
 
     echo "Pengajuan restok berhasil diubah.";
     exit;
 }
+
 
 // INSERT baru (wajib isi Id_stok_gudang)
 $sqlIns = "INSERT INTO restok_barang

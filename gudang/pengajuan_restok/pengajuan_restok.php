@@ -336,6 +336,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'gudang') {
   <th>Barang Masuk</th>
   <th>Total Harga</th>
   <th>Status Restok</th>
+    <th>Alasan Penolakan</th>
   <th>Aksi</th>
 </tr>
     </thead>
@@ -373,6 +374,14 @@ while ($a = mysqli_fetch_assoc($qAjukan)) {
 </td>
 <td data-label="Total_harga">Rp <?= number_format($a['Total_harga'], 2, ',', '.'); ?></td>
 <td data-label="Status"><?= htmlspecialchars($a['Status']); ?></td>
+
+<td data-label="Catatan">
+  <?php
+    $cat = (($a['Status'] ?? '') === 'Ditolak') ? trim($a['Catatan'] ?? '') : '';
+    echo $cat !== '' ? htmlspecialchars($cat) : '-';
+  ?>
+</td>
+
 <td data-label="Aksi">
 
           <?php if ($a['Status'] === 'Menunggu' || $a['Status'] === 'Ditolak'): ?>
@@ -518,7 +527,7 @@ $(document).ready(function(){
     $('#tabel-ajukan').DataTable({
       "pageLength": 10,
       "lengthMenu": [5, 10, 25, 50],
-      "columnDefs": [{ "orderable": false, "targets": 6 }],
+      "columnDefs": [{ "orderable": false, "targets": 8 }],
         "language": {
       "emptyTable": "Belum ada pengajuan restok gudang",
       "info": "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",

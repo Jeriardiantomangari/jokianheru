@@ -309,12 +309,13 @@ body {
   <table id="tabel-ajukan" class="tabel-ajukan">
     <thead>
       <tr>
-        <th>No.</th>
-        <th>Nama Barang</th>
-        <th>Jumlah Restok</th>
-        <th>Bahan Masuk</th>
-        <th>Status</th>
-        <th>Aksi</th>
+    <th>No.</th>
+    <th>Nama Barang</th>
+    <th>Jumlah Restok</th>
+    <th>Bahan Masuk</th>
+    <th>Status</th>
+    <th>Alasan Penolakan</th>
+    <th>Aksi</th>
       </tr>
     </thead>
     <tbody>
@@ -342,6 +343,14 @@ body {
         <td data-label="Jumlah Restok"><?= (int)($a['Jumlah_restok'] ?? 0); ?></td>
         <td data-label="Bahan Masuk"><?= $masuk > 0 ? $masuk : '-'; ?></td>
         <td data-label="Status"><?= htmlspecialchars($a['Status'] ?? '-'); ?></td>
+
+        <td data-label="Catatan">
+    <?php
+     $catatan = (($a['Status'] ?? '') === 'Ditolak') ? trim($a['Catatan'] ?? '') : '';
+echo $catatan !== '' ? htmlspecialchars($catatan) : '-';
+    ?>
+  </td>
+
         <td data-label="Aksi">
   <?php if (($a['Status'] ?? '') === 'Menunggu' || ($a['Status'] ?? '') === 'Ditolak'): ?>
     <button class="tombol-edit" onclick="editAjukan(<?= (int)$a['Id_restok_bahan']; ?>)">
@@ -421,7 +430,7 @@ $(document).ready(function () {
   $('#tabel-ajukan').DataTable({
     pageLength: 10,
     lengthMenu: [5, 10, 25, 50],
-    columnDefs: [{ orderable: false, targets: 5 }], 
+    columnDefs: [{ orderable: false, targets: 6 }], 
     language: {
       emptyTable: "Belum ada pengajuan restok ke gudang",
       info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
