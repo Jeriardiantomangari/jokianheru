@@ -210,6 +210,14 @@ body {
 .tutup-modal:hover{ 
   color:#d32f2f; }
 
+  .tabel-ajukan td small{
+  color:#757575;
+  font-size:13px;
+  margin-left:6px;
+  font-weight:600;
+  text-transform:lowercase;
+}
+
 @media screen and (max-width: 768px) {
   .konten-utama {
     margin-left: 0;
@@ -322,14 +330,20 @@ body {
       <?php
       $no = 1;
       // Query mengambil data restok bahan outlet + total bahan masuk
-      $qAjukan = mysqli_query($conn, "
+     $qAjukan = mysqli_query($conn, "
   SELECT
     r.*,
-    COALESCE(SUM(bm.Bahan_masuk),0) AS bahan_masuk_total
+    b.satuan,
+    COALESCE(bm_total.bahan_masuk_total, 0) AS bahan_masuk_total
   FROM restok_bahan_outlet r
-  LEFT JOIN bahan_masuk bm ON bm.Id_restok_bahan = r.Id_restok_bahan
+  LEFT JOIN stok_outlet so ON so.Id_stok_outlet = r.Id_stok_outlet
+  LEFT JOIN barang b ON b.id_barang = so.Id_barang
+  LEFT JOIN (
+      SELECT Id_restok_bahan, SUM(Bahan_masuk) AS bahan_masuk_total
+      FROM bahan_masuk
+      GROUP BY Id_restok_bahan
+  ) bm_total ON bm_total.Id_restok_bahan = r.Id_restok_bahan
   WHERE r.Id_outlet = $id_outlet
-  GROUP BY r.Id_restok_bahan
   ORDER BY r.Id_restok_bahan DESC
 ");
 
@@ -340,8 +354,22 @@ body {
       <tr>
         <td data-label="No"><?= $no++; ?></td>
         <td data-label="Nama Barang"><?= htmlspecialchars($a['Nama_barang'] ?? '-'); ?></td>
-        <td data-label="Jumlah Restok"><?= (int)($a['Jumlah_restok'] ?? 0); ?></td>
-        <td data-label="Bahan Masuk"><?= $masuk > 0 ? $masuk : '-'; ?></td>
+       <td data-label="Jumlah Restok">
+  <?= (int)($a['Jumlah_restok'] ?? 0); ?>
+  <?php if (!empty($a['satuan'])): ?>
+    <small><?= htmlspecialchars($a['satuan']); ?></small>
+  <?php endif; ?>
+</td>
+        <td data-label="Bahan Masuk">
+  <?php if ($masuk > 0): ?>
+    <?= $masuk; ?>
+    <?php if (!empty($a['satuan'])): ?>
+      <small><?= htmlspecialchars($a['satuan']); ?></small>
+    <?php endif; ?>
+  <?php else: ?>
+    -
+  <?php endif; ?>
+</td>
         <td data-label="Status"><?= htmlspecialchars($a['Status'] ?? '-'); ?></td>
 
         <td data-label="Catatan">

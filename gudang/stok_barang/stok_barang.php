@@ -131,6 +131,28 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'gudang'){
   font-weight:700;
 }
 
+.tabel-barang td small{
+  font-size:13px;
+  margin-left:6px;
+  font-weight:600;
+  text-transform:lowercase;
+}
+
+/* === SATUAN IKUT WARNA STATUS === */
+.tr-merah td small{
+  color:#b71c1c !important;
+  font-weight:700;
+}
+
+.tr-kuning td small{
+  color:#8d6e00 !important;
+  font-weight:700;
+}
+
+.tr-hijau td small{
+  color:#1b5e20 !important;
+  font-weight:700;
+}
 /* Responsif */
 @media screen and (max-width: 768px) {
   .konten-utama {
@@ -199,20 +221,21 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'gudang'){
       $no = 1;
 
       // JOIN stok_gudang dengan barang untuk ambil minimal_stok_gudang
-      $query = mysqli_query($conn, "
-        SELECT 
-          sg.Id_stok_gudang,
-          sg.Id_barang,
-          sg.Nama_barang,
-          sg.Kategori,
-          sg.Jumlah_stok,
-          b.minimal_stok_gudang,
-          COALESCE(k.nama_kategori, sg.Kategori) AS nama_kategori
-        FROM stok_gudang sg
-        JOIN barang b ON b.id_barang = sg.Id_barang
-        LEFT JOIN kategori k ON k.id_kategori = sg.Kategori
-        ORDER BY sg.Id_stok_gudang ASC
-      ");
+    $query = mysqli_query($conn, "
+  SELECT 
+    sg.Id_stok_gudang,
+    sg.Id_barang,
+    sg.Nama_barang,
+    sg.Kategori,
+    sg.Jumlah_stok,
+    b.minimal_stok_gudang,
+    b.satuan,
+    COALESCE(k.nama_kategori, sg.Kategori) AS nama_kategori
+  FROM stok_gudang sg
+  JOIN barang b ON b.id_barang = sg.Id_barang
+  LEFT JOIN kategori k ON k.id_kategori = sg.Kategori
+  ORDER BY sg.Id_stok_gudang ASC
+");
 
       if(!$query){
         die("Query gagal: " . mysqli_error($conn));
@@ -241,7 +264,12 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'gudang'){
         <td data-label="No"><?= $no++; ?></td>
         <td data-label="Nama Barang"><?= htmlspecialchars($row['Nama_barang']); ?></td>
         <td data-label="Kategori"><?= htmlspecialchars($row['nama_kategori']); ?></td>
-        <td data-label="Jumlah Stok"><?= $stok; ?></td>
+        <td data-label="Jumlah Stok">
+  <?= $stok; ?>
+  <?php if (!empty($row['satuan'])): ?>
+    <small><?= htmlspecialchars($row['satuan']); ?></small>
+  <?php endif; ?>
+</td>
         <td data-label="Peringatan"><?= $peringatan; ?></td>
       </tr>
       <?php } ?>

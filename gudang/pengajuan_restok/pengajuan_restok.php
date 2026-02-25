@@ -241,6 +241,14 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'gudang') {
   color:#d32f2f; 
 }
 
+.tabel-ajukan td small{
+  color:#757575;
+  font-size:13px;
+  margin-left:6px;
+  font-weight:600;
+  text-transform:lowercase;
+}
+
 @media screen and (max-width: 768px) {
   .konten-utama {
     margin-left: 0;
@@ -344,19 +352,22 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'gudang') {
      <?php
 $no = 1;
 // Query mengambil data restok barang + total barang masuk
-$qAjukan = mysqli_query(
-    $conn,
-    "
-    SELECT 
-        r.*,
-        COALESCE(SUM(bm.Barang_masuk), 0) AS barang_masuk
-    FROM restok_barang r
-    LEFT JOIN barang_masuk bm 
-        ON bm.Id_restok_barang = r.Id_restok_barang
-    GROUP BY r.Id_restok_barang
-    ORDER BY r.Id_restok_barang DESC
-    "
-);
+$qAjukan = mysqli_query($conn, "
+  SELECT 
+      r.*,
+      b.satuan,
+      COALESCE(bm_total.barang_masuk, 0) AS barang_masuk
+  FROM restok_barang r
+  LEFT JOIN barang b 
+      ON b.nama_barang = r.Nama_barang
+  LEFT JOIN (
+      SELECT Id_restok_barang, SUM(Barang_masuk) AS barang_masuk
+      FROM barang_masuk
+      GROUP BY Id_restok_barang
+  ) bm_total
+      ON bm_total.Id_restok_barang = r.Id_restok_barang
+  ORDER BY r.Id_restok_barang DESC
+");
 
 while ($a = mysqli_fetch_assoc($qAjukan)) {
 ?>
@@ -365,8 +376,25 @@ while ($a = mysqli_fetch_assoc($qAjukan)) {
         <td data-label="No"><?= $no++; ?></td>
 <td data-label="Nama Barang"><?= htmlspecialchars($a['Nama_barang']); ?></td>
 <td data-label="Harga">Rp <?= number_format($a['Harga'], 2, ',', '.'); ?></td>
-<td data-label="Jumlah_Restok"><?= (int)$a['Jumlah_restok']; ?></td>
+<td data-label="Jumlah Restok">
+  <?= (int)$a['Jumlah_restok']; ?>
+  <?php if (!empty($a['satuan'])): ?>
+    <small><?= htmlspecialchars($a['satuan']); ?></small>
+  <?php endif; ?>
+</td>
 <td data-label="Barang Masuk">
+  <?php
+    $bm = (int)($a['barang_masuk'] ?? 0);
+    if ($bm > 0) {
+      echo $bm;
+      if (!empty($a['satuan'])) {
+        echo ' <small>' . htmlspecialchars($a['satuan']) . '</small>';
+      }
+    } else {
+      echo '-';
+    }
+  ?>
+</td>
   <?php
     $bm = isset($a['barang_masuk']) ? (int)$a['barang_masuk'] : 0;
     echo ($bm > 0) ? $bm : '-';

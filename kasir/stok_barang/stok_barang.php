@@ -25,7 +25,8 @@ $sql = "
     COALESCE(so.Jumlah_stok, 0) AS Jumlah_stok,
     b.nama_barang,
     k.nama_kategori,
-    b.minimal_stok_outlet
+    b.minimal_stok_outlet,
+    b.satuan
   FROM stok_outlet so
   JOIN barang b ON b.id_barang = so.id_barang
   JOIN kategori k ON k.id_kategori = b.id_kategori
@@ -260,6 +261,28 @@ tr.row-hijau i{
   color:#1b5e20 !important;
   font-weight:700 !important;
 }
+
+.tabel-stok-outlet td small{
+  font-size:13px;
+  margin-left:6px;
+  font-weight:600;
+  text-transform:lowercase;
+}
+
+/* satuan ikut warna status */
+tr.row-merah td small{
+  color:#b71c1c !important;
+  font-weight:700 !important;
+}
+tr.row-kuning td small{
+  color:#8d6e00 !important;
+  font-weight:700 !important;
+}
+tr.row-hijau td small{
+  color:#1b5e20 !important;
+  font-weight:700 !important;
+}
+
  /* RESPONSIF  */
     @media screen and (max-width: 768px) {
       .konten-utama {
@@ -378,7 +401,12 @@ tr.row-hijau i{
         <td data-label="No"><?= $no++; ?></td>
         <td data-label="Nama_barang"><?= htmlspecialchars($row['nama_barang']); ?></td>
        <td data-label="Nama_kategori"><?= htmlspecialchars($row['nama_kategori']); ?></td>
-        <td data-label="Jumlah Stok"><?= $stok_now; ?></td>
+     <td data-label="Jumlah Stok">
+  <?= $stok_now; ?>
+  <?php if (!empty($row['satuan'])): ?>
+    <small><?= htmlspecialchars($row['satuan']); ?></small>
+  <?php endif; ?>
+</td>
         <td data-label="Status Stok"><?= $peringatan; ?></td>
         <td data-label="Aksi">
           <button class="tombol-edit" onclick="editStok(<?= (int)$row['Id_stok_outlet']; ?>)">

@@ -209,6 +209,15 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
   color:#d32f2f; 
 }
 
+
+.tabel-barang td small{
+  color:#757575;
+  font-size:1px;
+  margin-left:6px;
+  font-weight:600;
+  text-transform:lowercase;
+}
+
 /* Responsif */
 @media screen and (max-width: 768px) {
   .konten-utama {
@@ -303,7 +312,7 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
 $no = 1;
 // Query untuk mengambil data barang dan nama kategori dengan JOIN
 $query = mysqli_query($conn, "
-    SELECT b.id_barang, b.nama_barang, k.nama_kategori, b.harga, 
+    SELECT b.id_barang, b.nama_barang, b.satuan, k.nama_kategori, b.harga, 
            b.minimal_stok_gudang, b.maksimal_stok_gudang,
            b.minimal_stok_outlet, b.maksimal_stok_outlet
     FROM barang b
@@ -318,11 +327,18 @@ while ($row = mysqli_fetch_assoc($query)) {
     <td data-label="Nama Barang"><?= htmlspecialchars($row['nama_barang']); ?></td>
    <td data-label="Kategori"><?= htmlspecialchars($row['nama_kategori'] ?? 'Tidak ada kategori'); ?></td>
     <td data-label="Harga">Rp <?= number_format($row['harga'], 2, ',', '.'); ?></td>
-  <td data-label="Min Stok Gudang"><?= (int)$row['minimal_stok_gudang']; ?></td>
-  <td data-label="Max Stok Gudang"><?= (int)$row['maksimal_stok_gudang']; ?></td>
-
-  <td data-label="Min Stok Outlet"><?= (int)$row['minimal_stok_outlet']; ?></td>
-  <td data-label="Max Stok Outlet"><?= (int)$row['maksimal_stok_outlet']; ?></td>
+<td data-label="Min Stok Gudang">
+  <?= (int)$row['minimal_stok_gudang']; ?> <small><?= htmlspecialchars($row['satuan']); ?></small>
+</td>
+<td data-label="Max Stok Gudang">
+  <?= (int)$row['maksimal_stok_gudang']; ?> <small><?= htmlspecialchars($row['satuan']); ?></small>
+</td>
+<td data-label="Min Stok Outlet">
+  <?= (int)$row['minimal_stok_outlet']; ?> <small><?= htmlspecialchars($row['satuan']); ?></small>
+</td>
+<td data-label="Max Stok Outlet">
+  <?= (int)$row['maksimal_stok_outlet']; ?> <small><?= htmlspecialchars($row['satuan']); ?></small>
+</td>
     <td data-label="Aksi">
         <button class="tombol tombol-edit" onclick="editBarang(<?= $row['id_barang']; ?>)">
             <i class="fa-solid fa-pen-to-square"></i> Edit
@@ -347,7 +363,19 @@ while ($row = mysqli_fetch_assoc($query)) {
       <input type="hidden" name="id" id="idBarang">
 
       <input type="text" name="nama_barang" id="nama_barang" placeholder="Nama Barang" required>
-
+<select name="satuan" id="satuan" required>
+  <option value="" disabled selected>Pilih Satuan</option>
+  <option value="pcs">pcs</option>
+  <option value="box">box</option>
+  <option value="lusin">lusin</option>
+  <option value="kg">kg</option>
+  <option value="mg">mg</option>
+  <option value="gram">gram</option>
+  <option value="ons">ons</option>
+  <option value="ml">ml</option>
+  <option value="liter">liter</option>
+  <option value="pack">pack</option>
+</select>
        <!-- Kategori Dropdown -->
     <select name="kategori" id="kategori" required>
         <option value="" disabled selected>Pilih Kategori</option>
@@ -429,6 +457,7 @@ function editBarang(id) {
     $('#judulModal').text('Edit Barang');
     $('#idBarang').val(obj.id_barang);
     $('#nama_barang').val(obj.nama_barang);
+    $('#satuan').val(obj.satuan);
     $('#kategori').val(obj.id_kategori);
     $('#harga').val(obj.harga);
     $('#minimal_stok_gudang').val(obj.minimal_stok_gudang);

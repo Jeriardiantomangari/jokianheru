@@ -182,6 +182,14 @@ body {
 .btn-secondary{ background:#e0e0e0; }
 .btn-danger{ background:#c62828; color:#fff; }
 
+.tabel-ajukan td small{
+  color:#757575;
+  font-size:13px;
+  margin-left:6px;
+  font-weight:600;
+  text-transform:lowercase;
+}
+
 @media screen and (max-width: 768px) {
   .konten-utama {
     margin-left: 0;
@@ -271,16 +279,20 @@ body {
     <?php
       $no = 1;
 
-      $sql = "
-        SELECT 
-          r.*,
-          COALESCE(SUM(bm.Barang_masuk), 0) AS barang_masuk
-        FROM restok_barang r
-        LEFT JOIN barang_masuk bm ON bm.Id_restok_barang = r.Id_restok_barang
-        GROUP BY r.Id_restok_barang
-        ORDER BY r.Id_restok_barang DESC
-      ";
-
+$sql = "
+  SELECT 
+    r.*,
+    b.satuan,
+    COALESCE(bm_total.barang_masuk, 0) AS barang_masuk
+  FROM restok_barang r
+  LEFT JOIN barang b ON b.nama_barang = r.Nama_barang
+  LEFT JOIN (
+      SELECT Id_restok_barang, SUM(Barang_masuk) AS barang_masuk
+      FROM barang_masuk
+      GROUP BY Id_restok_barang
+  ) bm_total ON bm_total.Id_restok_barang = r.Id_restok_barang
+  ORDER BY r.Id_restok_barang DESC
+";
       $q = mysqli_query($conn, $sql);
       while($row = mysqli_fetch_assoc($q)) {
         $bm = (int)$row['barang_masuk'];
@@ -289,9 +301,23 @@ body {
       <td data-label="No"><?= $no++; ?></td>
       <td data-label="Nama Barang"><?= htmlspecialchars($row['Nama_barang']); ?></td>
       <td data-label="Harga Satuan">Rp <?= number_format((float)$row['Harga'], 2, ',', '.'); ?></td>
-      <td data-label="Jumlah Restok"><?= (int)$row['Jumlah_restok']; ?></td>
+      <td data-label="Jumlah Restok">
+  <?= (int)$row['Jumlah_restok']; ?>
+  <?php if (!empty($row['satuan'])): ?>
+    <small><?= htmlspecialchars($row['satuan']); ?></small>
+  <?php endif; ?>
+</td>
       <td data-label="Total Harga">Rp <?= number_format((float)$row['Total_harga'], 2, ',', '.'); ?></td>
-      <td data-label="Barang Masuk"><?= ($bm > 0) ? $bm : '-'; ?></td>
+    <td data-label="Barang Masuk">
+  <?php if ($bm > 0): ?>
+    <?= $bm; ?>
+    <?php if (!empty($row['satuan'])): ?>
+      <small><?= htmlspecialchars($row['satuan']); ?></small>
+    <?php endif; ?>
+  <?php else: ?>
+    -
+  <?php endif; ?>
+</td>
       <td data-label="Status"><?= htmlspecialchars($row['Status']); ?></td>
 
       <td data-label="Catatan">

@@ -164,6 +164,14 @@ body{
 .btn-secondary{ background:#e0e0e0; }
 .btn-danger{ background:#c62828; color:#fff; }
 
+.tabel-ajukan td small{
+  color:#757575;
+  font-size:13px;
+  margin-left:6px;
+  font-weight:600;
+  text-transform:lowercase;
+}
+
 @media screen and (max-width: 768px) {
   .konten-utama {
     margin-left: 0;
@@ -249,7 +257,7 @@ body{
     <tbody>
       <?php
       $no = 1;
-     $sql = "
+    $sql = "
   SELECT
     r.Id_restok_bahan,
     r.Id_outlet,
@@ -260,14 +268,18 @@ body{
     r.Catatan,
     o.nama_outlet,
     b.harga AS Harga,
+    b.satuan,
     (b.harga * r.Jumlah_restok) AS Total_harga,
-    COALESCE(SUM(bm.Bahan_masuk), 0) AS bahan_masuk
+    COALESCE(bm_total.bahan_masuk, 0) AS bahan_masuk
   FROM restok_bahan_outlet r
   JOIN outlet o ON o.id_outlet = r.Id_outlet
   LEFT JOIN stok_outlet so ON so.Id_stok_outlet = r.Id_stok_outlet
   LEFT JOIN barang b ON b.id_barang = so.Id_barang
-  LEFT JOIN bahan_masuk bm ON bm.Id_restok_bahan = r.Id_restok_bahan
-  GROUP BY r.Id_restok_bahan
+  LEFT JOIN (
+      SELECT Id_restok_bahan, SUM(Bahan_masuk) AS bahan_masuk
+      FROM bahan_masuk
+      GROUP BY Id_restok_bahan
+  ) bm_total ON bm_total.Id_restok_bahan = r.Id_restok_bahan
   ORDER BY r.Id_restok_bahan DESC
 ";
 
@@ -283,9 +295,23 @@ body{
         <td data-label="Outlet"><?= htmlspecialchars($row['nama_outlet'] ?? '-'); ?></td>
         <td data-label="Nama Barang"><?= htmlspecialchars($row['Nama_barang'] ?? '-'); ?></td>
         <td data-label="Harga">Rp <?= number_format($harga, 2, ',', '.'); ?></td>
-        <td data-label="Jumlah"><?= (int)($row['Jumlah_restok'] ?? 0); ?></td>
+     <td data-label="Jumlah Restok">
+  <?= (int)($row['Jumlah_restok'] ?? 0); ?>
+  <?php if (!empty($row['satuan'])): ?>
+    <small><?= htmlspecialchars($row['satuan']); ?></small>
+  <?php endif; ?>
+</td>
         <td data-label="Total">Rp <?= number_format($total, 2, ',', '.'); ?></td>
-        <td data-label="Bahan Masuk"><?= ($masuk > 0) ? $masuk : '-'; ?></td>
+        <td data-label="Bahan Masuk">
+  <?php if ($masuk > 0): ?>
+    <?= $masuk; ?>
+    <?php if (!empty($row['satuan'])): ?>
+      <small><?= htmlspecialchars($row['satuan']); ?></small>
+    <?php endif; ?>
+  <?php else: ?>
+    -
+  <?php endif; ?>
+</td>
         <td data-label="Status"><?= htmlspecialchars($row['Status'] ?? '-'); ?></td>
         <td data-label="Catatan"><?= htmlspecialchars($row['Catatan'] ?? '-'); ?></td>
 

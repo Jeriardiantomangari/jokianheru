@@ -29,6 +29,7 @@ $sqlLaporan = "
     SELECT
         o.nama_outlet AS nama_outlet,
         b.nama_barang,
+        b.satuan,
         k.nama_kategori AS nama_kategori,
         b.harga,
         b.minimal_stok_outlet,
@@ -85,6 +86,7 @@ $sqlRestok = "
     COALESCE(o.nama_outlet, '(Outlet tidak diketahui)') AS nama_outlet,
     r.Id_stok_outlet,
     COALESCE(so.Nama_barang, r.Nama_barang) AS nama_barang,
+    b.satuan,
     r.Jumlah_restok,
     COALESCE(bm.Bahan_masuk, 0) AS barang_masuk,
     r.Status
@@ -93,11 +95,12 @@ $sqlRestok = "
     ON o.id_outlet = r.Id_outlet
   LEFT JOIN stok_outlet so
     ON so.Id_stok_outlet = r.Id_stok_outlet
+  LEFT JOIN barang b
+    ON b.nama_barang = COALESCE(so.Nama_barang, r.Nama_barang)
   LEFT JOIN bahan_masuk bm
     ON bm.Id_restok_bahan = r.Id_restok_bahan
   WHERE 1=1
 ";
-
 
 $paramsR = [];
 $typesR  = "";
@@ -275,6 +278,14 @@ body{
 .badge.dikirim{ background:#fff8e1; color:#8d6e00; }
 .badge.selesai{ background:#e8f5e9; color:#1b5e20; }
 
+.tabel-ajukan td small{
+  color:#757575;
+  font-size:13px;
+  margin-left:6px;
+  font-weight:600;
+  text-transform:lowercase;
+}
+
 @media screen and (max-width: 768px) {
   .konten-utama{
     margin-left:0;
@@ -368,8 +379,19 @@ body{
           <td data-label="Nama Barang"><?= htmlspecialchars($row['nama_barang']); ?></td>
           <td data-label="Kategori"><?= htmlspecialchars($row['nama_kategori'] ?? '-'); ?></td>
           <td data-label="Harga">Rp <?= number_format((int)$row['harga'],0,',','.'); ?></td>
-          <td data-label="Stok Gudang"><?= (int)$row['stok_gudang']; ?></td>
-          <td data-label="Stok Outlet"><?= (int)$row['stok_outlet']; ?></td>
+         <td data-label="Stok Gudang">
+  <?= (int)$row['stok_gudang']; ?>
+  <?php if (!empty($row['satuan'])): ?>
+    <small><?= htmlspecialchars($row['satuan']); ?></small>
+  <?php endif; ?>
+</td>
+
+<td data-label="Stok Outlet">
+  <?= (int)$row['stok_outlet']; ?>
+  <?php if (!empty($row['satuan'])): ?>
+    <small><?= htmlspecialchars($row['satuan']); ?></small>
+  <?php endif; ?>
+</td>
         </tr>
       <?php endforeach; ?>
     </tbody>
@@ -430,8 +452,19 @@ body{
           <td data-label="ID Restok"><?= (int)$r['Id_restok_bahan']; ?></td>
           <td data-label="Outlet"><?= htmlspecialchars($r['nama_outlet']); ?></td>
           <td data-label="Nama Barang"><?= htmlspecialchars($r['nama_barang'] ?? '-'); ?></td>
-          <td data-label="Jumlah"><?= (int)$r['Jumlah_restok']; ?></td>
-         <td data-label="Barang Masuk"><?= (int)($r['barang_masuk'] ?? 0); ?></td>
+         <td data-label="Jumlah Restok">
+  <?= (int)$r['Jumlah_restok']; ?>
+  <?php if (!empty($r['satuan'])): ?>
+    <small><?= htmlspecialchars($r['satuan']); ?></small>
+  <?php endif; ?>
+</td>
+
+<td data-label="Jml Barang Masuk">
+  <?= (int)($r['barang_masuk'] ?? 0); ?>
+  <?php if (!empty($r['satuan'])): ?>
+    <small><?= htmlspecialchars($r['satuan']); ?></small>
+  <?php endif; ?>
+</td>
 <td data-label="Status"><span class="badge <?= $cls; ?>"><?= htmlspecialchars($r['Status'] ?? '-'); ?></span></td>
 <td data-label="Aksi">
   <?php if (strtolower(trim($r['Status'] ?? '')) === 'selesai'): ?>
