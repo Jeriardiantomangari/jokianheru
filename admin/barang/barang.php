@@ -363,19 +363,19 @@ while ($row = mysqli_fetch_assoc($query)) {
       <input type="hidden" name="id" id="idBarang">
 
       <input type="text" name="nama_barang" id="nama_barang" placeholder="Nama Barang" required>
-<select name="satuan" id="satuan" required>
-  <option value="" disabled selected>Pilih Satuan</option>
-  <option value="pcs">pcs</option>
-  <option value="box">box</option>
-  <option value="lusin">lusin</option>
-  <option value="kg">kg</option>
-  <option value="mg">mg</option>
-  <option value="gram">gram</option>
-  <option value="ons">ons</option>
-  <option value="ml">ml</option>
-  <option value="liter">liter</option>
-  <option value="pack">pack</option>
-</select>
+        <select name="satuan" id="satuan" required>
+          <option value="" disabled selected>Pilih Satuan</option>
+          <option value="pcs">pcs</option>
+          <option value="box">box</option>
+          <option value="lusin">lusin</option>
+          <option value="kg">kg</option>
+          <option value="mg">mg</option>
+          <option value="gram">gram</option>
+          <option value="ons">ons</option>
+          <option value="ml">ml</option>
+          <option value="liter">liter</option>
+          <option value="pack">pack</option>
+        </select>
        <!-- Kategori Dropdown -->
     <select name="kategori" id="kategori" required>
         <option value="" disabled selected>Pilih Kategori</option>

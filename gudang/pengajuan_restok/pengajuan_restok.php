@@ -337,16 +337,16 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'gudang') {
   <table id="tabel-ajukan" class="tabel-ajukan">
     <thead>
      <tr>
-  <th>No.</th>
-  <th>Nama Barang</th>
-  <th>Harga</th>
-  <th>Jumlah Restok</th>
-  <th>Barang Masuk</th>
-  <th>Total Harga</th>
-  <th>Status Restok</th>
-    <th>Alasan Penolakan</th>
-  <th>Aksi</th>
-</tr>
+      <th>No.</th>
+      <th>Nama Barang</th>
+      <th>Harga</th>
+      <th>Jumlah Restok</th>
+      <th>Barang Masuk</th>
+      <th>Total Harga</th>
+      <th>Status Restok</th>
+      <th>Alasan Penolakan</th>
+      <th>Aksi</th>
+     </tr>
     </thead>
     <tbody>
      <?php

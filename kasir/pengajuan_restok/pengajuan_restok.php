@@ -317,13 +317,13 @@ body {
   <table id="tabel-ajukan" class="tabel-ajukan">
     <thead>
       <tr>
-    <th>No.</th>
-    <th>Nama Barang</th>
-    <th>Jumlah Restok</th>
-    <th>Bahan Masuk</th>
-    <th>Status</th>
-    <th>Alasan Penolakan</th>
-    <th>Aksi</th>
+       <th>No.</th>
+       <th>Nama Barang</th>
+       <th>Jumlah Restok</th>
+       <th>Bahan Masuk</th>
+       <th>Status</th>
+       <th>Alasan Penolakan</th>
+       <th>Aksi</th>
       </tr>
     </thead>
     <tbody>

@@ -269,7 +269,7 @@ tr.row-hijau i{
   text-transform:lowercase;
 }
 
-/* satuan ikut warna status */
+/* satuan warna  */
 tr.row-merah td small{
   color:#b71c1c !important;
   font-weight:700 !important;

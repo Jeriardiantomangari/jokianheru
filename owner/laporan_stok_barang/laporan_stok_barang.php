@@ -89,7 +89,8 @@ $sqlRestok = "
     b.satuan,
     r.Jumlah_restok,
     COALESCE(bm.Bahan_masuk, 0) AS barang_masuk,
-    r.Status
+    r.Status,
+    r.Catatan
   FROM restok_bahan_outlet r
   LEFT JOIN outlet o
     ON o.id_outlet = r.Id_outlet
@@ -437,48 +438,68 @@ body{
         <th>Jumlah Restok</th>
         <th>Jml Barang Masuk</th>
         <th>Status</th>
+        <th>Alasan Penolakan</th>
         <th>Aksi</th>
       </tr>
     </thead>
-    <tbody>
-      <?php foreach($restokRows as $r): ?>
+  <tbody>
+  <?php foreach($restokRows as $r): ?>
+    <?php
+      $st = strtolower(trim($r['Status'] ?? 'menunggu'));
+      $cls = 'menunggu';
+      if ($st === 'selesai') $cls = 'selesai';
+      else if ($st === 'dikirim') $cls = 'dikirim';
+
+      $statusLower = $st;
+      $catatan = trim($r['Catatan'] ?? '');
+      $isDitolak = in_array($statusLower, ['ditolak', 'tolak', 'rejected']);
+    ?>
+    <tr>
+      <td data-label="ID Restok"><?= (int)$r['Id_restok_bahan']; ?></td>
+      <td data-label="Outlet"><?= htmlspecialchars($r['nama_outlet']); ?></td>
+      <td data-label="Nama Barang"><?= htmlspecialchars($r['nama_barang'] ?? '-'); ?></td>
+
+      <td data-label="Jumlah Restok">
+        <?= (int)$r['Jumlah_restok']; ?>
+        <?php if (!empty($r['satuan'])): ?>
+          <small><?= htmlspecialchars($r['satuan']); ?></small>
+        <?php endif; ?>
+      </td>
+
+      <td data-label="Jml Barang Masuk">
+        <?= (int)($r['barang_masuk'] ?? 0); ?>
+        <?php if (!empty($r['satuan'])): ?>
+          <small><?= htmlspecialchars($r['satuan']); ?></small>
+        <?php endif; ?>
+      </td>
+
+      <td data-label="Status">
+        <span class="badge <?= $cls; ?>"><?= htmlspecialchars($r['Status'] ?? '-'); ?></span>
+      </td>
+
+      <td data-label="Alasan Penolakan">
         <?php
-          $st = strtolower(trim($r['Status'] ?? 'menunggu'));
-          $cls = 'menunggu';
-          if ($st === 'selesai') $cls = 'selesai';
-          else if ($st === 'dikirim') $cls = 'dikirim';
+          if ($isDitolak) {
+            echo $catatan !== '' ? htmlspecialchars($catatan) : '-';
+          } else {
+            echo '-';
+          }
         ?>
-        <tr>
-          <td data-label="ID Restok"><?= (int)$r['Id_restok_bahan']; ?></td>
-          <td data-label="Outlet"><?= htmlspecialchars($r['nama_outlet']); ?></td>
-          <td data-label="Nama Barang"><?= htmlspecialchars($r['nama_barang'] ?? '-'); ?></td>
-         <td data-label="Jumlah Restok">
-  <?= (int)$r['Jumlah_restok']; ?>
-  <?php if (!empty($r['satuan'])): ?>
-    <small><?= htmlspecialchars($r['satuan']); ?></small>
-  <?php endif; ?>
-</td>
+      </td>
 
-<td data-label="Jml Barang Masuk">
-  <?= (int)($r['barang_masuk'] ?? 0); ?>
-  <?php if (!empty($r['satuan'])): ?>
-    <small><?= htmlspecialchars($r['satuan']); ?></small>
-  <?php endif; ?>
-</td>
-<td data-label="Status"><span class="badge <?= $cls; ?>"><?= htmlspecialchars($r['Status'] ?? '-'); ?></span></td>
-<td data-label="Aksi">
-  <?php if (strtolower(trim($r['Status'] ?? '')) === 'selesai'): ?>
-    <button class="tombol tombol-hapus" onclick="hapusRestokOwner(<?= (int)$r['Id_restok_bahan']; ?>)">
-      Hapus
-    </button>
-  <?php else: ?>
-    -
-  <?php endif; ?>
-</td>
+      <td data-label="Aksi">
+        <?php if ($statusLower === 'selesai'): ?>
+          <button class="tombol tombol-hapus" onclick="hapusRestokOwner(<?= (int)$r['Id_restok_bahan']; ?>)">
+            Hapus
+          </button>
+        <?php else: ?>
+          -
+        <?php endif; ?>
+      </td>
 
-        </tr>
-      <?php endforeach; ?>
-    </tbody>
+    </tr>
+  <?php endforeach; ?>
+</tbody>
   </table>
 
 </div>

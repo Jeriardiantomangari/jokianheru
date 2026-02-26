@@ -242,16 +242,16 @@ body{
   <table id="tabel-ajukan-outlet" class="tabel-ajukan">
     <thead>
       <tr>
-<th>No.</th>
-<th>Outlet</th>
-<th>Nama Barang</th>
-<th>Harga Satuan</th>
-<th>Jumlah Restok</th>
-<th>Total Harga</th>
-<th>Bahan Masuk</th>
-<th>Status</th>
-<th>Catatan</th>
-<th>Aksi</th>
+        <th>No.</th>
+        <th>Outlet</th>
+        <th>Nama Barang</th>
+        <th>Harga Satuan</th>
+        <th>Jumlah Restok</th>
+        <th>Total Harga</th>
+        <th>Bahan Masuk</th>
+        <th>Status</th>
+        <th>Catatan</th>
+        <th>Aksi</th>
       </tr>
     </thead>
     <tbody>
@@ -296,27 +296,25 @@ body{
         <td data-label="Nama Barang"><?= htmlspecialchars($row['Nama_barang'] ?? '-'); ?></td>
         <td data-label="Harga">Rp <?= number_format($harga, 2, ',', '.'); ?></td>
      <td data-label="Jumlah Restok">
-  <?= (int)($row['Jumlah_restok'] ?? 0); ?>
-  <?php if (!empty($row['satuan'])): ?>
-    <small><?= htmlspecialchars($row['satuan']); ?></small>
-  <?php endif; ?>
-</td>
-        <td data-label="Total">Rp <?= number_format($total, 2, ',', '.'); ?></td>
-        <td data-label="Bahan Masuk">
-  <?php if ($masuk > 0): ?>
-    <?= $masuk; ?>
-    <?php if (!empty($row['satuan'])): ?>
+      <?= (int)($row['Jumlah_restok'] ?? 0); ?><?php if (!empty($row['satuan'])): ?>
+        <small><?= htmlspecialchars($row['satuan']); ?></small>
+      <?php endif; ?></td>
+      
+      <td data-label="Total">Rp <?= number_format($total, 2, ',', '.'); ?></td>
+
+      <td data-label="Bahan Masuk">
+      <?php if ($masuk > 0): ?><?= $masuk; ?><?php if (!empty($row['satuan'])): ?>
       <small><?= htmlspecialchars($row['satuan']); ?></small>
-    <?php endif; ?>
-  <?php else: ?>
+        <?php endif; ?>
+        <?php else: ?>
     -
-  <?php endif; ?>
-</td>
+         <?php endif; ?>
+         </td>
         <td data-label="Status"><?= htmlspecialchars($row['Status'] ?? '-'); ?></td>
         <td data-label="Catatan"><?= htmlspecialchars($row['Catatan'] ?? '-'); ?></td>
 
         <td data-label="Aksi">
-  <?php if (($row['Status'] ?? '') === 'Menunggu'): ?>
+     <?php if (($row['Status'] ?? '') === 'Menunggu'): ?>
     <button class="tombol tombol-setuju" onclick="setujui(<?= (int)$row['Id_restok_bahan']; ?>)">
       <i class="fa-solid fa-check"></i> Setujui
     </button>

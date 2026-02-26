@@ -380,9 +380,9 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
 
     .modal-body { padding: 14px; }
 
-    /* ================= STRUK RAPiH ================= */
+    /* ================= STRUK ================= */
     #print-struk {
-      width: 360px;              /* tetap rapih di modal */
+      width: 360px;             
       margin: 0 auto;
     }
 
@@ -416,7 +416,6 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
 
     .struk-items { margin-top: 4px; }
 
-    /* setiap item: nama (1 baris), lalu qty x harga (kiri) dan subtotal (kanan) */
     .struk-item { margin: 6px 0; }
 
     .struk-item-name {
@@ -471,7 +470,7 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
         position: fixed;
         left: 0;
         top: 0;
-        width: 80mm;   /* cocok thermal */
+        width: 80mm;  
         margin: 0;
         padding: 0;
       }
@@ -962,13 +961,12 @@ $(document).on('click', '.tombol-cetak', function () {
   // ====== SETTING STRUK (80mm) ======
   const paperWidth = 80;          // mm
   const margin = 4;               // mm
-  const lineH = 4.2;              // mm (tinggi baris)
+  const lineH = 4.2;              // mm 
   const usableW = paperWidth - (margin * 2);
 
-  // hitung tinggi dinamis (judul + meta + garis + (tiap item 2 baris) + total + footer)
-  const baseLines = 10; // judul+meta+garis+total+footer
+  const baseLines = 10; 
   const itemLines = data.items.length * 2;
-  const estHeight = (baseLines + itemLines) * lineH + 20; // +20 buffer
+  const estHeight = (baseLines + itemLines) * lineH + 20; 
   const paperHeight = Math.max(120, estHeight);
 
   const doc = new jsPDF({
@@ -990,9 +988,9 @@ $(document).on('click', '.tombol-cetak', function () {
 
  const line = () => {
   doc.setLineWidth(0.2);
-  doc.setLineDashPattern([1, 1], 0); // dash 1mm, gap 1mm
+  doc.setLineDashPattern([1, 1], 0); 
   doc.line(margin, y, paperWidth - margin, y);
-  doc.setLineDashPattern([], 0);     // reset biar teks lain normal
+  doc.setLineDashPattern([], 0);    
 };
 
   // ====== HEADER ======

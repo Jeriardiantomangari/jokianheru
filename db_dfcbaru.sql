@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Waktu pembuatan: 24 Feb 2026 pada 16.00
+-- Waktu pembuatan: 26 Feb 2026 pada 07.00
 -- Versi server: 8.4.3
 -- Versi PHP: 8.3.26
 
@@ -66,9 +66,6 @@ CREATE TABLE `bahan_masuk` (
 --
 
 INSERT INTO `bahan_masuk` (`Id_bahan_masuk`, `Id_restok_bahan`, `Nama_barang`, `Jumlah_restok`, `Bahan_masuk`) VALUES
-(7, 8, 'ikan', 120, 120),
-(13, 14, 'ayam', 1, 1),
-(23, 25, 'ikan', 20, 12),
 (24, 27, 'ayam', 2, 2);
 
 -- --------------------------------------------------------
@@ -81,6 +78,7 @@ CREATE TABLE `barang` (
   `id_barang` int NOT NULL,
   `id_kategori` int NOT NULL,
   `nama_barang` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `satuan` enum('pcs','box','lusin','kg','mg','gram','ons','ml','liter','pack') NOT NULL,
   `kategori` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `harga` int NOT NULL,
   `minimal_stok_gudang` int NOT NULL,
@@ -93,10 +91,10 @@ CREATE TABLE `barang` (
 -- Dumping data untuk tabel `barang`
 --
 
-INSERT INTO `barang` (`id_barang`, `id_kategori`, `nama_barang`, `kategori`, `harga`, `minimal_stok_gudang`, `maksimal_stok_gudang`, `minimal_stok_outlet`, `maksimal_stok_outlet`) VALUES
-(1, 1, 'ayam', '1', 100000, 60, 100, 60, 100),
-(4, 1, 'ikan', '1', 200000, 60, 100, 60, 100),
-(5, 1, 'garam', '1', 3000, 60, 100, 60, 100);
+INSERT INTO `barang` (`id_barang`, `id_kategori`, `nama_barang`, `satuan`, `kategori`, `harga`, `minimal_stok_gudang`, `maksimal_stok_gudang`, `minimal_stok_outlet`, `maksimal_stok_outlet`) VALUES
+(1, 1, 'ayam', 'lusin', '1', 100000, 60, 100, 60, 100),
+(4, 1, 'ikan', 'pcs', '1', 200000, 60, 100, 60, 100),
+(5, 1, 'garam', 'pcs', '1', 3000, 60, 100, 60, 100);
 
 -- --------------------------------------------------------
 
@@ -257,9 +255,6 @@ CREATE TABLE `restok_bahan_outlet` (
 --
 
 INSERT INTO `restok_bahan_outlet` (`Id_restok_bahan`, `Id_outlet`, `Id_stok_outlet`, `Nama_barang`, `Jumlah_restok`, `Status`, `Catatan`) VALUES
-(8, 1, 4, 'ikan', 120, 'Selesai', NULL),
-(14, 1, 3, 'ayam', 1, 'Selesai', NULL),
-(25, 1, 4, 'ikan', 20, 'Selesai', NULL),
 (27, 5, 6, 'ayam', 2, 'Selesai', 'stok belum tersedia'),
 (28, 5, 6, 'ayam', 3, 'Dikirim', 'egeg');
 

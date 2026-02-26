@@ -246,9 +246,6 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'gudang'){
         $min  = (int)$row['minimal_stok_gudang'];
 
         // 3 kondisi:
-        // Kurang  : stok < min          => merah
-        // Medium  : stok >= min & <2min => kuning
-        // Banyak  : stok >= 2min        => hijau
         if ($stok < $min) {
           $kelas = 'tr-merah';
           $peringatan = 'Kurang';
