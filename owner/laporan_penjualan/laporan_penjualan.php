@@ -899,6 +899,41 @@ new Chart(ctx, {
         }
     }
 });
+
+function toggleOutletDetail(oid) {
+  const detailRow = document.getElementById('detail-row-' + oid);
+  const btn = document.getElementById('btn-toggle-' + oid);
+
+  if (!detailRow) return;
+
+  const isOpen = detailRow.style.display !== 'none' && detailRow.style.display !== '';
+
+  // kalau sedang terbuka -> tutup
+  if (isOpen) {
+    detailRow.style.display = 'none';
+    if (btn) btn.textContent = 'Lihat';
+    return;
+  }
+
+  // tutup semua detail lain (opsional biar seperti accordion)
+  document.querySelectorAll('tr[id^="detail-row-"]').forEach(tr => tr.style.display = 'none');
+  document.querySelectorAll('button[id^="btn-toggle-"]').forEach(b => b.textContent = 'Lihat');
+
+  // buka yang dipilih
+  detailRow.style.display = 'table-row';
+  if (btn) btn.textContent = 'Tutup';
+
+  // scroll biar kelihatan (opsional)
+  detailRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function closeOutletDetail(oid) {
+  const detailRow = document.getElementById('detail-row-' + oid);
+  const btn = document.getElementById('btn-toggle-' + oid);
+
+  if (detailRow) detailRow.style.display = 'none';
+  if (btn) btn.textContent = 'Lihat';
+}
 </script>
 
 </body>

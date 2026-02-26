@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Waktu pembuatan: 26 Feb 2026 pada 07.00
+-- Waktu pembuatan: 26 Feb 2026 pada 17.31
 -- Versi server: 8.4.3
 -- Versi PHP: 8.3.26
 
@@ -44,8 +44,7 @@ INSERT INTO `akun` (`id_akun`, `id_outlet`, `nama`, `username`, `password`, `rol
 (4, NULL, 'Jeri Arianto2', 'owner', 'okedang', 'owner'),
 (5, NULL, 'Nama Admin', 'admin', 'okedang', 'admin'),
 (8, NULL, 'abdul j', 'gudang', 'okedang', 'gudang'),
-(9, 1, 'ddfgdsg', 'kasir', 'okedang', 'kasir'),
-(12, 5, 'abdul ', 'kasir2', 'okedang', 'kasir');
+(9, 7, 'ddfgdsg', 'kasir', 'okedang', 'kasir');
 
 -- --------------------------------------------------------
 
@@ -66,7 +65,7 @@ CREATE TABLE `bahan_masuk` (
 --
 
 INSERT INTO `bahan_masuk` (`Id_bahan_masuk`, `Id_restok_bahan`, `Nama_barang`, `Jumlah_restok`, `Bahan_masuk`) VALUES
-(24, 27, 'ayam', 2, 2);
+(25, 31, 'ayam', 100, 100);
 
 -- --------------------------------------------------------
 
@@ -92,9 +91,7 @@ CREATE TABLE `barang` (
 --
 
 INSERT INTO `barang` (`id_barang`, `id_kategori`, `nama_barang`, `satuan`, `kategori`, `harga`, `minimal_stok_gudang`, `maksimal_stok_gudang`, `minimal_stok_outlet`, `maksimal_stok_outlet`) VALUES
-(1, 1, 'ayam', 'lusin', '1', 100000, 60, 100, 60, 100),
-(4, 1, 'ikan', 'pcs', '1', 200000, 60, 100, 60, 100),
-(5, 1, 'garam', 'pcs', '1', 3000, 60, 100, 60, 100);
+(8, 5, 'ayam', 'pcs', '5', 30000, 100, 100, 100, 100);
 
 -- --------------------------------------------------------
 
@@ -116,8 +113,7 @@ CREATE TABLE `barang_masuk` (
 --
 
 INSERT INTO `barang_masuk` (`Id_barang_masuk`, `Id_restok_barang`, `Nama_barang`, `Harga`, `Jumlah_restok`, `Barang_masuk`) VALUES
-(15, 62, 'ayam', NULL, 12, 5),
-(16, 63, 'garam', NULL, 10, 10);
+(17, 68, 'ayam', NULL, 100, 100);
 
 -- --------------------------------------------------------
 
@@ -140,13 +136,7 @@ CREATE TABLE `detail_penjualan` (
 --
 
 INSERT INTO `detail_penjualan` (`Id_detail_penjualan`, `id_penjualan`, `id_menu`, `Nama_menu`, `Harga`, `Jumlah`, `Total`) VALUES
-(3, 3, 1, 'nasi ayam ', 15000.00, 2, 30000.00),
-(4, 4, 1, 'nasi ayam ', 15000.00, 1, 15000.00),
-(5, 5, 1, 'nasi ayam ', 15000.00, 1, 15000.00),
-(6, 6, 1, 'nasi ayam ', 15000.00, 3, 45000.00),
-(7, 7, 1, 'nasi ayam ', 15000.00, 55, 825000.00),
-(8, 8, 1, 'nasi ayam ', 15000.00, 4, 60000.00),
-(9, 9, 1, 'nasi ayam ', 15000.00, 3, 45000.00);
+(11, 11, 5, 'nasi ayam ', 15000.00, 4, 60000.00);
 
 -- --------------------------------------------------------
 
@@ -164,7 +154,7 @@ CREATE TABLE `kategori` (
 --
 
 INSERT INTO `kategori` (`id_kategori`, `nama_kategori`) VALUES
-(1, 'bahankp');
+(5, 'bahan');
 
 -- --------------------------------------------------------
 
@@ -185,7 +175,7 @@ CREATE TABLE `menu` (
 --
 
 INSERT INTO `menu` (`id_menu`, `nama_menu`, `jenis`, `harga`, `gambar`) VALUES
-(1, 'nasi ayam ', 'Makanan', 15000, '1771946157_fd844d23.jpeg');
+(5, 'nasi ayam ', 'Makanan', 15000, '1772126602_460114dc.jpeg');
 
 -- --------------------------------------------------------
 
@@ -204,8 +194,7 @@ CREATE TABLE `outlet` (
 --
 
 INSERT INTO `outlet` (`id_outlet`, `nama_outlet`, `alamat`) VALUES
-(1, 'kelapa', 'jl kelapa 2'),
-(5, 'sagu', 'ddd');
+(7, 'waena', 'perumnas1');
 
 -- --------------------------------------------------------
 
@@ -232,7 +221,9 @@ INSERT INTO `penjualan` (`id_penjualan`, `id_outlet`, `id_kasir`, `tanggal`, `to
 (6, 5, 10, '2026-01-03 13:58:41', 45000),
 (7, 5, 10, '2026-01-04 12:52:15', 825000),
 (8, 1, 9, '2026-02-22 17:52:26', 60000),
-(9, 1, 9, '2026-02-24 15:13:49', 45000);
+(9, 1, 9, '2026-02-24 15:13:49', 45000),
+(10, 1, 9, '2026-02-26 11:41:34', 60000),
+(11, 7, 9, '2026-02-26 17:27:58', 60000);
 
 -- --------------------------------------------------------
 
@@ -255,8 +246,7 @@ CREATE TABLE `restok_bahan_outlet` (
 --
 
 INSERT INTO `restok_bahan_outlet` (`Id_restok_bahan`, `Id_outlet`, `Id_stok_outlet`, `Nama_barang`, `Jumlah_restok`, `Status`, `Catatan`) VALUES
-(27, 5, 6, 'ayam', 2, 'Selesai', 'stok belum tersedia'),
-(28, 5, 6, 'ayam', 3, 'Dikirim', 'egeg');
+(31, 7, 9, 'ayam', 100, 'Selesai', NULL);
 
 -- --------------------------------------------------------
 
@@ -280,8 +270,7 @@ CREATE TABLE `restok_barang` (
 --
 
 INSERT INTO `restok_barang` (`Id_restok_barang`, `Id_stok_gudang`, `Nama_barang`, `Harga`, `Jumlah_restok`, `Total_harga`, `Status`, `Catatan`) VALUES
-(62, 5, 'ayam', 100000.00, 12, 1200000.00, 'Selesai', NULL),
-(63, 6, 'garam', 3000.00, 10, 30000.00, 'Selesai', NULL);
+(68, 7, 'ayam', 30.00, 100, 3000.00, 'Selesai', NULL);
 
 -- --------------------------------------------------------
 
@@ -302,9 +291,7 @@ CREATE TABLE `stok_gudang` (
 --
 
 INSERT INTO `stok_gudang` (`Id_stok_gudang`, `id_barang`, `Nama_barang`, `Kategori`, `Jumlah_stok`) VALUES
-(4, 4, 'ikan', '1', 6),
-(5, 1, 'ayam', '1', 752),
-(6, 5, 'garam', '1', 10);
+(7, 8, 'ayam', '5', 0);
 
 -- --------------------------------------------------------
 
@@ -326,12 +313,7 @@ CREATE TABLE `stok_outlet` (
 --
 
 INSERT INTO `stok_outlet` (`Id_stok_outlet`, `id_outlet`, `id_barang`, `Nama_barang`, `Kategori`, `Jumlah_stok`) VALUES
-(3, 1, 1, 'ayam', '1', 66),
-(4, 1, 4, 'ikan', '1', 342),
-(5, 1, 5, 'garam', '1', 29),
-(6, 5, 1, 'ayam', '1', 2),
-(7, 5, 5, 'garam', '1', 0),
-(8, 5, 4, 'ikan', '1', 0);
+(9, 7, 8, 'ayam', '5', 100);
 
 --
 -- Indeks untuk tabel yang dibuang
@@ -342,7 +324,7 @@ INSERT INTO `stok_outlet` (`Id_stok_outlet`, `id_outlet`, `id_barang`, `Nama_bar
 --
 ALTER TABLE `akun`
   ADD PRIMARY KEY (`id_akun`),
-  ADD KEY `id_outlet` (`id_outlet`);
+  ADD KEY `akun_ibfk_1` (`id_outlet`);
 
 --
 -- Indeks untuk tabel `bahan_masuk`
@@ -356,7 +338,7 @@ ALTER TABLE `bahan_masuk`
 --
 ALTER TABLE `barang`
   ADD PRIMARY KEY (`id_barang`),
-  ADD KEY `id_kategori` (`id_kategori`);
+  ADD KEY `barang_ibfk_1` (`id_kategori`);
 
 --
 -- Indeks untuk tabel `barang_masuk`
@@ -370,8 +352,8 @@ ALTER TABLE `barang_masuk`
 --
 ALTER TABLE `detail_penjualan`
   ADD PRIMARY KEY (`Id_detail_penjualan`),
-  ADD KEY `Id_menu` (`id_menu`),
-  ADD KEY `detail_penjualan_ibfk_1` (`id_penjualan`);
+  ADD KEY `detail_penjualan_ibfk_1` (`id_penjualan`),
+  ADD KEY `detail_penjualan_ibfk_2` (`id_menu`);
 
 --
 -- Indeks untuk tabel `kategori`
@@ -404,30 +386,30 @@ ALTER TABLE `penjualan`
 --
 ALTER TABLE `restok_bahan_outlet`
   ADD PRIMARY KEY (`Id_restok_bahan`),
-  ADD KEY `Id_stok_outlet` (`Id_stok_outlet`),
-  ADD KEY `fk_restok_outlet_outlet` (`Id_outlet`);
+  ADD KEY `fk_restok_outlet_outlet` (`Id_outlet`),
+  ADD KEY `restok_bahan_outlet_ibfk_2` (`Id_stok_outlet`);
 
 --
 -- Indeks untuk tabel `restok_barang`
 --
 ALTER TABLE `restok_barang`
   ADD PRIMARY KEY (`Id_restok_barang`),
-  ADD KEY `Id_stok_gudang` (`Id_stok_gudang`);
+  ADD KEY `restok_barang_ibfk_1` (`Id_stok_gudang`);
 
 --
 -- Indeks untuk tabel `stok_gudang`
 --
 ALTER TABLE `stok_gudang`
   ADD PRIMARY KEY (`Id_stok_gudang`),
-  ADD KEY `Id_barang` (`id_barang`);
+  ADD KEY `stok_gudang_ibfk_1` (`id_barang`);
 
 --
 -- Indeks untuk tabel `stok_outlet`
 --
 ALTER TABLE `stok_outlet`
   ADD PRIMARY KEY (`Id_stok_outlet`),
-  ADD KEY `Id_barang` (`id_barang`),
-  ADD KEY `id_outlet` (`id_outlet`);
+  ADD KEY `id_outlet` (`id_outlet`),
+  ADD KEY `stok_outlet_ibfk_1` (`id_barang`);
 
 --
 -- AUTO_INCREMENT untuk tabel yang dibuang
@@ -443,73 +425,73 @@ ALTER TABLE `akun`
 -- AUTO_INCREMENT untuk tabel `bahan_masuk`
 --
 ALTER TABLE `bahan_masuk`
-  MODIFY `Id_bahan_masuk` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `Id_bahan_masuk` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT untuk tabel `barang`
 --
 ALTER TABLE `barang`
-  MODIFY `id_barang` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id_barang` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT untuk tabel `barang_masuk`
 --
 ALTER TABLE `barang_masuk`
-  MODIFY `Id_barang_masuk` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `Id_barang_masuk` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT untuk tabel `detail_penjualan`
 --
 ALTER TABLE `detail_penjualan`
-  MODIFY `Id_detail_penjualan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `Id_detail_penjualan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT untuk tabel `kategori`
 --
 ALTER TABLE `kategori`
-  MODIFY `id_kategori` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_kategori` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT untuk tabel `menu`
 --
 ALTER TABLE `menu`
-  MODIFY `id_menu` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_menu` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT untuk tabel `outlet`
 --
 ALTER TABLE `outlet`
-  MODIFY `id_outlet` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id_outlet` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT untuk tabel `penjualan`
 --
 ALTER TABLE `penjualan`
-  MODIFY `id_penjualan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id_penjualan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT untuk tabel `restok_bahan_outlet`
 --
 ALTER TABLE `restok_bahan_outlet`
-  MODIFY `Id_restok_bahan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `Id_restok_bahan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT untuk tabel `restok_barang`
 --
 ALTER TABLE `restok_barang`
-  MODIFY `Id_restok_barang` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
+  MODIFY `Id_restok_barang` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
 
 --
 -- AUTO_INCREMENT untuk tabel `stok_gudang`
 --
 ALTER TABLE `stok_gudang`
-  MODIFY `Id_stok_gudang` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `Id_stok_gudang` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT untuk tabel `stok_outlet`
 --
 ALTER TABLE `stok_outlet`
-  MODIFY `Id_stok_outlet` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `Id_stok_outlet` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
@@ -519,20 +501,19 @@ ALTER TABLE `stok_outlet`
 -- Ketidakleluasaan untuk tabel `akun`
 --
 ALTER TABLE `akun`
-  ADD CONSTRAINT `akun_ibfk_1` FOREIGN KEY (`id_outlet`) REFERENCES `outlet` (`id_outlet`);
+  ADD CONSTRAINT `akun_ibfk_1` FOREIGN KEY (`id_outlet`) REFERENCES `outlet` (`id_outlet`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Ketidakleluasaan untuk tabel `bahan_masuk`
 --
 ALTER TABLE `bahan_masuk`
-  ADD CONSTRAINT `bahan_masuk_ibfk_1` FOREIGN KEY (`Id_restok_bahan`) REFERENCES `restok_bahan_outlet` (`Id_restok_bahan`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_bahan_masuk_restok` FOREIGN KEY (`Id_restok_bahan`) REFERENCES `restok_bahan_outlet` (`Id_restok_bahan`) ON DELETE RESTRICT ON UPDATE CASCADE;
+  ADD CONSTRAINT `bahan_masuk_ibfk_1` FOREIGN KEY (`Id_restok_bahan`) REFERENCES `restok_bahan_outlet` (`Id_restok_bahan`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Ketidakleluasaan untuk tabel `barang`
 --
 ALTER TABLE `barang`
-  ADD CONSTRAINT `barang_ibfk_1` FOREIGN KEY (`id_kategori`) REFERENCES `kategori` (`id_kategori`);
+  ADD CONSTRAINT `barang_ibfk_1` FOREIGN KEY (`id_kategori`) REFERENCES `kategori` (`id_kategori`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Ketidakleluasaan untuk tabel `barang_masuk`
@@ -545,34 +526,33 @@ ALTER TABLE `barang_masuk`
 --
 ALTER TABLE `detail_penjualan`
   ADD CONSTRAINT `detail_penjualan_ibfk_1` FOREIGN KEY (`id_penjualan`) REFERENCES `penjualan` (`id_penjualan`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `detail_penjualan_ibfk_2` FOREIGN KEY (`id_menu`) REFERENCES `menu` (`id_menu`);
+  ADD CONSTRAINT `detail_penjualan_ibfk_2` FOREIGN KEY (`id_menu`) REFERENCES `menu` (`id_menu`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Ketidakleluasaan untuk tabel `restok_bahan_outlet`
 --
 ALTER TABLE `restok_bahan_outlet`
-  ADD CONSTRAINT `fk_restok_outlet_outlet` FOREIGN KEY (`Id_outlet`) REFERENCES `outlet` (`id_outlet`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  ADD CONSTRAINT `restok_bahan_outlet_ibfk_1` FOREIGN KEY (`Id_outlet`) REFERENCES `outlet` (`id_outlet`),
-  ADD CONSTRAINT `restok_bahan_outlet_ibfk_2` FOREIGN KEY (`Id_stok_outlet`) REFERENCES `stok_outlet` (`Id_stok_outlet`);
+  ADD CONSTRAINT `fk_restok_outlet_outlet` FOREIGN KEY (`Id_outlet`) REFERENCES `outlet` (`id_outlet`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `restok_bahan_outlet_ibfk_2` FOREIGN KEY (`Id_stok_outlet`) REFERENCES `stok_outlet` (`Id_stok_outlet`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Ketidakleluasaan untuk tabel `restok_barang`
 --
 ALTER TABLE `restok_barang`
-  ADD CONSTRAINT `restok_barang_ibfk_1` FOREIGN KEY (`Id_stok_gudang`) REFERENCES `stok_gudang` (`Id_stok_gudang`);
+  ADD CONSTRAINT `restok_barang_ibfk_1` FOREIGN KEY (`Id_stok_gudang`) REFERENCES `stok_gudang` (`Id_stok_gudang`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Ketidakleluasaan untuk tabel `stok_gudang`
 --
 ALTER TABLE `stok_gudang`
-  ADD CONSTRAINT `stok_gudang_ibfk_1` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`);
+  ADD CONSTRAINT `stok_gudang_ibfk_1` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Ketidakleluasaan untuk tabel `stok_outlet`
 --
 ALTER TABLE `stok_outlet`
-  ADD CONSTRAINT `fk_stok_outlet_outlet` FOREIGN KEY (`id_outlet`) REFERENCES `outlet` (`id_outlet`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  ADD CONSTRAINT `stok_outlet_ibfk_1` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`);
+  ADD CONSTRAINT `fk_stok_outlet_outlet` FOREIGN KEY (`id_outlet`) REFERENCES `outlet` (`id_outlet`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `stok_outlet_ibfk_1` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

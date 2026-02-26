@@ -212,7 +212,7 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
 
 .tabel-barang td small{
   color:#757575;
-  font-size:1px;
+  font-size:13px;
   margin-left:6px;
   font-weight:600;
   text-transform:lowercase;

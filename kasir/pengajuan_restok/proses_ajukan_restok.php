@@ -14,6 +14,45 @@ $id_outlet = (int)$_SESSION['id_outlet'];
 
 function norm_status($s) { return strtolower(trim((string)$s)); }
 
+/**
+ * Ambil stok outlet saat ini + maksimal stok outlet dari tabel barang.
+ * - stok_sekarang: dari stok_outlet (COALESCE jadi 0)
+ * - maksimal: dari barang.maksimal_stok_outlet (COALESCE jadi 0)
+ *
+ * Catatan: bila maksimal = 0 => dianggap TIDAK DIBATASI (lihat validasi pemanggil).
+ */
+function get_stok_dan_maksimal_outlet($conn, $id_outlet, $id_barang) {
+    $sqlS = "SELECT COALESCE(so.Jumlah_stok, 0) AS stok_sekarang
+             FROM stok_outlet so
+             WHERE so.id_outlet = ? AND so.id_barang = ?
+             LIMIT 1";
+    $stmtS = mysqli_prepare($conn, $sqlS);
+    mysqli_stmt_bind_param($stmtS, "ii", $id_outlet, $id_barang);
+    mysqli_stmt_execute($stmtS);
+    $resS = mysqli_stmt_get_result($stmtS);
+
+    $stok_sekarang = 0;
+    if ($resS && ($rS = mysqli_fetch_assoc($resS))) {
+        $stok_sekarang = (int)$rS['stok_sekarang'];
+    }
+
+    $sqlM = "SELECT COALESCE(maksimal_stok_outlet, 0) AS maksimal
+             FROM barang
+             WHERE id_barang = ?
+             LIMIT 1";
+    $stmtM = mysqli_prepare($conn, $sqlM);
+    mysqli_stmt_bind_param($stmtM, "i", $id_barang);
+    mysqli_stmt_execute($stmtM);
+    $resM = mysqli_stmt_get_result($stmtM);
+
+    $maksimal = 0;
+    if ($resM && ($rM = mysqli_fetch_assoc($resM))) {
+        $maksimal = (int)$rM['maksimal'];
+    }
+
+    return [$stok_sekarang, $maksimal];
+}
+
 function get_or_create_stok_outlet($conn, $id_outlet, $id_barang) {
 
     $sql = "SELECT Id_stok_outlet
@@ -77,18 +116,17 @@ if (($_POST['aksi'] ?? '') === 'ambil') {
     $jumlah = (int)$row['Jumlah_restok'];
 
     echo json_encode([
-    'id' => (int)$row['Id_restok_bahan'],
-    'id_barang' => $id_barang,
-    'id_stok_outlet' => (int)$row['Id_stok_outlet'],
-    'nama_barang' => $row['Nama_barang'],
-    'jumlah_restok' => $jumlah,
-    'status' => $row['Status']
-]);
-exit;
+        'id' => (int)$row['Id_restok_bahan'],
+        'id_barang' => $id_barang,
+        'id_stok_outlet' => (int)$row['Id_stok_outlet'],
+        'nama_barang' => $row['Nama_barang'],
+        'jumlah_restok' => $jumlah,
+        'status' => $row['Status']
+    ]);
+    exit;
 }
 
 /*  AMBIL KONFIRMASI  */
-
 if (($_POST['aksi'] ?? '') === 'ambil_konfirmasi') {
     $id = (int)($_POST['id'] ?? 0);
     if ($id <= 0) { echo json_encode(['error'=>'ID tidak valid']); exit; }
@@ -123,7 +161,6 @@ if (($_POST['aksi'] ?? '') === 'ambil_konfirmasi') {
 }
 
 /* HAPUS  */
-
 if (($_POST['aksi'] ?? '') === 'hapus') {
     $id = (int)($_POST['id'] ?? 0);
     if ($id <= 0) { echo "ID tidak valid"; exit; }
@@ -217,8 +254,6 @@ if (($_POST['aksi'] ?? '') === 'selesai') {
             throw new Exception("Gagal menyimpan data bahan masuk.");
         }
 
-        $id_bahan_masuk_baru = (int)mysqli_insert_id($conn);
-
         // update stok_outlet
         $sqlStok = "UPDATE stok_outlet
                     SET Jumlah_stok = COALESCE(Jumlah_stok, 0) + ?
@@ -226,7 +261,6 @@ if (($_POST['aksi'] ?? '') === 'selesai') {
         $stmtStok = mysqli_prepare($conn, $sqlStok);
         mysqli_stmt_bind_param($stmtStok, "ii", $bahan_masuk, $id_stok_outlet);
         mysqli_stmt_execute($stmtStok);
-
 
         // update status selesai
         $statusBaru = 'Selesai';
@@ -261,7 +295,7 @@ if ($id_barang <= 0 || $jumlah_restok <= 0) {
     exit;
 }
 
-$sqlB = "SELECT nama_barang FROM barang WHERE id_barang = ? LIMIT 1";
+$sqlB = "SELECT nama_barang, maksimal_stok_outlet FROM barang WHERE id_barang = ? LIMIT 1";
 $stmtB = mysqli_prepare($conn, $sqlB);
 mysqli_stmt_bind_param($stmtB, "i", $id_barang);
 mysqli_stmt_execute($stmtB);
@@ -275,9 +309,28 @@ if (!$resB || mysqli_num_rows($resB) === 0) {
 $barang = mysqli_fetch_assoc($resB);
 $nama_barang = $barang['nama_barang'];
 
+// pastikan stok_outlet ada (kalau belum ada, dibuat)
 $id_stok_outlet = get_or_create_stok_outlet($conn, $id_outlet, $id_barang);
 if ($id_stok_outlet <= 0) {
     echo "Stok outlet untuk barang ini tidak ditemukan/gagal dibuat.";
+    exit;
+}
+
+/* ===== VALIDASI MAKSIMAL STOK OUTLET =====
+   Jika maksimal_stok_outlet = 0 => dianggap tidak dibatasi.
+   Kalau kamu mau 0 dianggap batas 0, ubah kondisi if jadi: if (($stok_sekarang + $jumlah_restok) > $maksimal_outlet)
+*/
+list($stok_sekarang, $maksimal_outlet) = get_stok_dan_maksimal_outlet($conn, $id_outlet, $id_barang);
+
+if ($maksimal_outlet > 0 && ($stok_sekarang + $jumlah_restok) > $maksimal_outlet) {
+
+    $sisa_boleh = $maksimal_outlet - $stok_sekarang;
+
+    if ($sisa_boleh < 0) {
+        $sisa_boleh = 0;
+    }
+
+    echo "Pengajuan ditolak: stok outlet saat ini $stok_sekarang, maksimal stok outlet  $maksimal_outlet. Kamu hanya bisa ajukan maksimal $sisa_boleh.";
     exit;
 }
 

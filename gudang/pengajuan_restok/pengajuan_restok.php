@@ -372,68 +372,65 @@ $qAjukan = mysqli_query($conn, "
 while ($a = mysqli_fetch_assoc($qAjukan)) {
 ?>
 
-      <tr>
-        <td data-label="No"><?= $no++; ?></td>
-<td data-label="Nama Barang"><?= htmlspecialchars($a['Nama_barang']); ?></td>
-<td data-label="Harga">Rp <?= number_format($a['Harga'], 2, ',', '.'); ?></td>
-<td data-label="Jumlah Restok">
-  <?= (int)$a['Jumlah_restok']; ?>
-  <?php if (!empty($a['satuan'])): ?>
-    <small><?= htmlspecialchars($a['satuan']); ?></small>
-  <?php endif; ?>
-</td>
-<td data-label="Barang Masuk">
-  <?php
-    $bm = (int)($a['barang_masuk'] ?? 0);
-    if ($bm > 0) {
-      echo $bm;
-      if (!empty($a['satuan'])) {
-        echo ' <small>' . htmlspecialchars($a['satuan']) . '</small>';
+     <tr>
+  <td data-label="No"><?= $no++; ?></td>
+
+  <td data-label="Nama Barang"><?= htmlspecialchars($a['Nama_barang']); ?></td>
+
+  <td data-label="Harga">Rp <?= number_format($a['Harga'], 2, ',', '.'); ?></td>
+
+  <td data-label="Jumlah Restok">
+    <?= (int)$a['Jumlah_restok']; ?>
+    <?php if (!empty($a['satuan'])): ?>
+      <small><?= htmlspecialchars($a['satuan']); ?></small>
+    <?php endif; ?>
+  </td>
+
+  <td data-label="Barang Masuk">
+    <?php
+      $bm = (int)($a['barang_masuk'] ?? 0);
+      if ($bm > 0) {
+        echo $bm;
+        if (!empty($a['satuan'])) {
+          echo ' <small>' . htmlspecialchars($a['satuan']) . '</small>';
+        }
+      } else {
+        echo '-';
       }
-    } else {
-      echo '-';
-    }
-  ?>
-</td>
-  <?php
-    $bm = isset($a['barang_masuk']) ? (int)$a['barang_masuk'] : 0;
-    echo ($bm > 0) ? $bm : '-';
-  ?>
-</td>
-<td data-label="Total_harga">Rp <?= number_format($a['Total_harga'], 2, ',', '.'); ?></td>
-<td data-label="Status"><?= htmlspecialchars($a['Status']); ?></td>
+    ?>
+  </td>
 
-<td data-label="Catatan">
-  <?php
-    $cat = (($a['Status'] ?? '') === 'Ditolak') ? trim($a['Catatan'] ?? '') : '';
-    echo $cat !== '' ? htmlspecialchars($cat) : '-';
-  ?>
-</td>
+  <td data-label="Total Harga">Rp <?= number_format($a['Total_harga'], 2, ',', '.'); ?></td>
 
-<td data-label="Aksi">
+  <td data-label="Status"><?= htmlspecialchars($a['Status']); ?></td>
 
-          <?php if ($a['Status'] === 'Menunggu' || $a['Status'] === 'Ditolak'): ?>
-            <button class="tombol-edit" onclick="editAjukan(<?= $a['Id_restok_barang']; ?>)">
-              <i class="fa-solid fa-pen-to-square"></i> Edit
-            </button>
-            <button class="tombol-hapus" onclick="hapusAjukan(<?= $a['Id_restok_barang']; ?>)">
-              <i class="fa-solid fa-trash"></i> Hapus
-            </button>
-         <?php elseif ($a['Status'] === 'Disetujui'): ?>
-  <button class="tombol-selesai" onclick="bukaModalKonfirmasi(<?= $a['Id_restok_barang']; ?>)">
-    <i class="fa-solid fa-circle-check"></i> Konfirmasi
-  </button>
+  <td data-label="Catatan">
+    <?php
+      $cat = (($a['Status'] ?? '') === 'Ditolak') ? trim($a['Catatan'] ?? '') : '';
+      echo $cat !== '' ? htmlspecialchars($cat) : '-';
+    ?>
+  </td>
 
-            </button>
-          <?php elseif ($a['Status'] === 'Selesai'): ?>
-            <button class="tombol-hapus" onclick="hapusAjukan(<?= $a['Id_restok_barang']; ?>)">
-              <i class="fa-solid fa-trash"></i> Hapus
-            </button>
-          <?php else: ?>
-            -
-          <?php endif; ?>
-        </td>
-      </tr>
+  <td data-label="Aksi">
+    <?php if ($a['Status'] === 'Menunggu' || $a['Status'] === 'Ditolak'): ?>
+      <button class="tombol-edit" onclick="editAjukan(<?= (int)$a['Id_restok_barang']; ?>)">
+        <i class="fa-solid fa-pen-to-square"></i> Edit
+      </button>
+      <button class="tombol-hapus" onclick="hapusAjukan(<?= (int)$a['Id_restok_barang']; ?>)">
+        <i class="fa-solid fa-trash"></i> Hapus
+      </button>
+
+    <?php elseif ($a['Status'] === 'Disetujui'): ?>
+      <button class="tombol-selesai" onclick="bukaModalKonfirmasi(<?= (int)$a['Id_restok_barang']; ?>)">
+        <i class="fa-solid fa-circle-check"></i> Konfirmasi
+      </button>
+
+    <?php elseif ($a['Status'] === 'Selesai'): ?>
+     <?php elseif ($a['Status'] === 'Selesai'): ?>
+  <!-- tidak ada tombol -->
+<?php endif; ?>
+  </td>
+</tr>
       <?php } ?>
     </tbody>
   </table>
