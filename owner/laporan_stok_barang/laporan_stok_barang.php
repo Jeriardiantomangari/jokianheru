@@ -76,6 +76,26 @@ while ($r = $resultLap->fetch_assoc()) {
 $stmtLap->close();
 
 /* =========================
+   DATA KHUSUS STOK GUDANG
+========================= */
+$sqlGudang = "
+    SELECT 
+        b.nama_barang,
+        b.minimal_stok_gudang,
+        COALESCE(sg.Jumlah_stok, 0) AS stok_gudang
+    FROM stok_gudang sg
+    JOIN barang b ON b.id_barang = sg.id_barang
+    ORDER BY b.nama_barang
+";
+
+$resGudang = $koneksi->query($sqlGudang);
+
+$rowsGudang = [];
+while ($g = $resGudang->fetch_assoc()) {
+    $rowsGudang[] = $g;
+}
+
+/* =========================
    (A) MONITORING RESTOK OUTLET -> GUDANG
    sumber: restok_bahan_outlet
 ========================= */
@@ -545,8 +565,10 @@ $(document).ready(function () {
     }
   });
 
-  // ===== DATA DARI PHP (STOK) =====
+  // ===== DATA DARI PHP (STOK outlet) =====
   const rawRows = <?= json_encode($rows, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+   // ===== DATA DARI PHP (STOK gudang) =====
+  const rawGudang = <?= json_encode($rowsGudang, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 
   // ===== WARNA SESUAI LEVEL STOK =====
   function pickColor(stok, min) {
@@ -642,57 +664,50 @@ $(document).ready(function () {
     });
   }
 
-  // ===== CHART STOK GUDANG =====
-  const gudangMap = {};
-  rawRows.forEach(r => {
-    const barang = (r.nama_barang ?? '').toString();
-    const stokG  = parseInt(r.stok_gudang ?? 0, 10) || 0;
-    const min    = parseInt(r.minimal_stok_outlet ?? 0, 10) || 0;
+  // ===== CHART STOK GUDANG (FIXED - AMBIL LANGSUNG DARI TABEL GUDANG) =====
 
-    if (!gudangMap[barang]) {
-      gudangMap[barang] = { stok: 0, min: min };
-    }
-    gudangMap[barang].stok = Math.max(gudangMap[barang].stok, stokG);
-    if (min > gudangMap[barang].min) gudangMap[barang].min = min;
-  });
+const gudangLabels = rawGudang.map(r => r.nama_barang);
+const gudangValues = rawGudang.map(r => parseInt(r.stok_gudang) || 0);
 
-  const gudangLabels = Object.keys(gudangMap);
-  const gudangValues = gudangLabels.map(b => gudangMap[b].stok);
-  const gudangColors = gudangLabels.map(b => pickColor(gudangMap[b].stok, gudangMap[b].min));
+const gudangColors = rawGudang.map(r => {
+  const stok = parseInt(r.stok_gudang) || 0;
+  const min  = parseInt(r.minimal_stok_gudang) || 0;
+  return pickColor(stok, min);
+});
 
-  const canvasGudang = document.getElementById('gudangChart');
-  if (canvasGudang) {
-    new Chart(canvasGudang, {
-      type: 'bar',
-      data: {
-        labels: gudangLabels,
-        datasets: [{
-          data: gudangValues,
-          backgroundColor: gudangColors,
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                const barang = context.label;
-                const stok   = context.parsed.y;
-                const min    = gudangMap[barang].min;
-                return `Stok Gudang: ${stok} | Minimal: ${min}`;
-              }
+const canvasGudang = document.getElementById('gudangChart');
+if (canvasGudang) {
+  new Chart(canvasGudang, {
+    type: 'bar',
+    data: {
+      labels: gudangLabels,
+      datasets: [{
+        data: gudangValues,
+        backgroundColor: gudangColors,
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const index = context.dataIndex;
+              const stok  = context.parsed.y;
+              const min   = rawGudang[index].minimal_stok_gudang;
+              return `Stok Gudang: ${stok} | Minimal: ${min}`;
             }
           }
-        },
-        scales: {
-          y: { beginAtZero: true, ticks: { precision: 0 } }
         }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { precision: 0 } }
       }
-    });
-  }
+    }
+  });
+}
 
 
 });
