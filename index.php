@@ -81,23 +81,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['role'], $_POST['usern
       font-family: Inter, system-ui, Arial;
     }
 
-    body {
-      margin: 0;
-      background-size: cover;
-      font-family: Arial, sans-serif;
-    }
-
-    body {
+   body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
-              url('gambar/logo.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
+  height: 100vh;
+  overflow: hidden;
 
-    .wadah {
+  background: linear-gradient(
+  135deg,
+  #ff0000 0%,
+  #ff7a00 35%,
+  #ffd000 70%,
+  #ffffff 100%
+);
+}
+ .wadah {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -105,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['role'], $_POST['usern
     }
 
     .kartu {
-      background: #ffffff;
+      background: #ffffffff;
       width: 400px;
       padding: 24px;
       margin: 20px;
@@ -183,17 +181,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['role'], $_POST['usern
       cursor: pointer;
     }
 
-    .tombol-masuk {
-      width: 100%;
-      padding: 10px;
-      border-radius: 6px;
-      border: none;
-      margin-top: 14px;
-      background: #fff;
-      color: blue;
-      font-weight: 700;
-      cursor: pointer;
-      border: 1px solid black;
+   .tombol-masuk{
+    width:100%;
+    padding:12px;
+    border-radius:8px;
+    border:none;
+    margin-top:14px;
+    background:linear-gradient(90deg,#ff0000,#ff9900);
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.3s;
+    }
+
+   .tombol-masuk:hover{
+    transform:scale(1.03);
+    box-shadow:0 5px 15px rgba(0,0,0,0.3);
     }
 
     .lupa-sandi {
@@ -225,7 +228,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['role'], $_POST['usern
     }
 
     .kotak-modal h2 {
-      color: #4c6ef5;
+      color: #ff2f00ff;
       margin-bottom: 10px;
     }
 
@@ -237,7 +240,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['role'], $_POST['usern
     .kotak-modal button {
       margin-top: 15px;
       padding: 8px 16px;
-      background: #4c6ef5;
+       background:linear-gradient(90deg,#ff0000,#ff9900);
       color: #ffffff;
       border: none;
       border-radius: 6px;
@@ -257,18 +260,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['role'], $_POST['usern
       gap: 8px;
     }
 
+  .bg-kiri{
+ position: fixed;
+ left: 50px;
+ top: 50%;
+ transform: translateY(-50%);
+ width: 400px;
+ height: 400px;
+ background-image: url('gambar/logo.png');
+ background-size: contain;
+ background-repeat: no-repeat;
+ background-position: center;
+ opacity: 0.20;
+ z-index: 0;
+}
+
+.bg-kanan{
+ position: fixed;
+ right: 50px;
+ top: 50%;
+ transform: translateY(-50%);
+ width: 400px;
+ height: 400px;
+ background-image: url('gambar/logo.png');
+ background-size: contain;
+ background-repeat: no-repeat;
+ background-position: center;
+ opacity: 0.20;
+ z-index: 0;
+}
+
     @media screen and (max-width: 768px) {
       .lupa-sandi {
         margin-top: 20px;
       }
+    .bg-kiri,
+.bg-kanan{
+ display:none;
+}
     }
   </style>
 </head>
 
 <body>
+<div class="bg-kiri"></div>
+<div class="bg-kanan"></div>
   <div class="wadah">
     <div class="kartu">
-      <img src="gambar/logo.jpg" alt="login" class="gambar" />
+      <img src="gambar/logo.png" alt="login" class="gambar" />
 
       <?php if (!empty($error)): ?>
         <div class="alert-error">
