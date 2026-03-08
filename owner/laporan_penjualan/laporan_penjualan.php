@@ -739,24 +739,26 @@ if ($jenis_laporan == 'harian') {
                                                             <div style="margin-bottom:10px; border:1px solid #ffe0b2; border-radius:12px; overflow:hidden;">
                                                                 <div style="padding:8px 10px;">
                                                                     <table>
-                                                                        <thead>
+                                                                     <thead>
+                                                                     <tr>
+                                                                           <th>Kasir</th>
+                                                                           <th>Menu</th>
+                                                                           <th class="teks-kanan">Harga</th>
+                                                                            <th class="teks-tengah">Jml</th>
+                                                                            <th class="teks-kanan">Subtotal</th>
+                                                                              </tr>
+                                                                      </thead>
+                                                                      <tbody>
+                                                                         <?php foreach ($tx['items'] as $it): ?>
                                                                             <tr>
-                                                                                <th>Menu</th>
-                                                                                <th class="teks-kanan">Harga</th>
-                                                                                <th class="teks-tengah">Jml</th>
-                                                                                <th class="teks-kanan">Subtotal</th>
+                                                                               <td><?= htmlspecialchars($tx['nama_kasir'] ?? '-'); ?></td>
+                                                                               <td><?= htmlspecialchars($it['nama_menu']); ?></td>
+                                                                               <td class="teks-kanan">Rp <?= number_format((int)$it['harga'], 0, ',', '.'); ?></td>
+                                                                               <td class="teks-tengah"><?= number_format((int)$it['jumlah'], 0, ',', '.'); ?></td>
+                                                                               <td class="teks-kanan">Rp <?= number_format((int)$it['total'], 0, ',', '.'); ?></td>
                                                                             </tr>
-                                                                        </thead>
-                                                                        <tbody>
-                                                                            <?php foreach ($tx['items'] as $it): ?>
-                                                                                <tr>
-                                                                                    <td><?= htmlspecialchars($it['nama_menu']); ?></td>
-                                                                                    <td class="teks-kanan">Rp <?= number_format((int)$it['harga'], 0, ',', '.'); ?></td>
-                                                                                    <td class="teks-tengah"><?= number_format((int)$it['jumlah'], 0, ',', '.'); ?></td>
-                                                                                    <td class="teks-kanan">Rp <?= number_format((int)$it['total'], 0, ',', '.'); ?></td>
-                                                                                </tr>
-                                                                            <?php endforeach; ?>
-                                                                        </tbody>
+                                                                        <?php endforeach; ?>
+                                                                     </tbody>
                                                                     </table>
                                                                 </div>
                                                             </div>

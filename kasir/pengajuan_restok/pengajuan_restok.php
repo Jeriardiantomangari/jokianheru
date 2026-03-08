@@ -158,7 +158,7 @@ body {
   width:400px;
   max-width:90%; 
   box-shadow:0 6px 18px rgba(0,0,0,.35); 
-  text-align:center; 
+  text-align:left; 
   position:relative; 
   border-top:4px solid #d32f2f; }
 
@@ -423,7 +423,8 @@ echo $catatan !== '' ? htmlspecialchars($catatan) : '-';
         ?>
       </select>
     
-      <input type="number" min="1" id="jumlah_restok" name="jumlah_restok" placeholder="Jumlah restok" required>
+<label>Jumlah Restok</label>
+<input type="number" min="1" id="jumlah_restok" name="jumlah_restok" placeholder="Masukkan jumlah restok" required>
 
       <button type="submit">Simpan</button>
     </form>

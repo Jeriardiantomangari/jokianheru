@@ -178,7 +178,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'gudang') {
   width: 400px;
   max-width: 90%;
   box-shadow: 0 6px 18px rgba(0,0,0,.35);
-  text-align: center;
+  text-align: left;
   position: relative;
   border-top: 4px solid #d32f2f;
 }
@@ -441,24 +441,31 @@ while ($a = mysqli_fetch_assoc($qAjukan)) {
   <div class="isi-modal">
     <span class="tutup-modal" onclick="tutupModalAjukan()">&times;</span>
     <h3 id="judulModal">Ajukan Restok Barang</h3>
-    <form id="formAjukan">
-      <input type="hidden" name="id" id="id_ajukan">
-      <label>Pilih Barang</label>
-      <select name="id_barang" id="id_barang" required>
-        <option value="">-- Pilih Barang --</option>
-        <?php
-        $qBarang = mysqli_query($conn, "SELECT id_barang, nama_barang, harga FROM barang ORDER BY nama_barang ASC");
-        while($b = mysqli_fetch_assoc($qBarang)) {
-          echo '<option value="'.$b['id_barang'].'" data-harga="'.$b['harga'].'">'.$b['nama_barang'].'</option>';
-        }
-        ?>
-      </select>
-      <input type="number" id="harga" name="harga" placeholder="Harga" readonly>
-      <input type="number" min="1" id="jumlah_restok" name="jumlah_restok" placeholder="Jumlah restok" required>
-      <input type="number" id="total_harga" name="total_harga" placeholder="Total harga" readonly>
+   <form id="formAjukan">
+  <input type="hidden" name="id" id="id_ajukan">
 
-      <button type="submit">Simpan</button>
-    </form>
+  <label for="id_barang">Pilih Barang</label>
+  <select name="id_barang" id="id_barang" required>
+    <option value="">-- Pilih Barang --</option>
+    <?php
+    $qBarang = mysqli_query($conn, "SELECT id_barang, nama_barang, harga FROM barang ORDER BY nama_barang ASC");
+    while($b = mysqli_fetch_assoc($qBarang)) {
+      echo '<option value="'.$b['id_barang'].'" data-harga="'.$b['harga'].'">'.$b['nama_barang'].'</option>';
+    }
+    ?>
+  </select>
+
+  <label for="harga">Harga Barang</label>
+  <input type="number" id="harga" name="harga" readonly>
+
+  <label for="jumlah_restok">Jumlah Restok</label>
+  <input type="number" min="1" id="jumlah_restok" name="jumlah_restok" required>
+
+  <label for="total_harga">Total Harga</label>
+  <input type="number" id="total_harga" name="total_harga" readonly>
+
+  <button type="submit">Simpan</button>
+</form>
   </div>
 </div>
 

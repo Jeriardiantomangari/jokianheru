@@ -19,6 +19,9 @@ if (!isset($_SESSION['id_akun'])) {
 $id_outlet = (int)$_SESSION['id_outlet'];
 $id_kasir  = (int)$_SESSION['id_akun'];
 
+// ==== PATH LOGO ====
+$logo_path = '../../gambar/logo.jpg';
+
 // ==== Ambil NAMA outlet ====
 $nama_outlet = 'Outlet';
 $qOutlet = mysqli_query($conn, "SELECT nama_outlet FROM outlet WHERE id_outlet = $id_outlet LIMIT 1");
@@ -27,7 +30,6 @@ if ($qOutlet && mysqli_num_rows($qOutlet) > 0) {
 }
 
 // ==== Ambil NAMA kasir ====
-// Sesuaikan kolomnya: nama / username / nama_akun
 $nama_kasir = 'Kasir';
 $qKasir = mysqli_query($conn, "SELECT nama FROM akun WHERE id_akun = $id_kasir LIMIT 1");
 if ($qKasir && mysqli_num_rows($qKasir) > 0) {
@@ -382,7 +384,7 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
 
     /* ================= STRUK ================= */
     #print-struk {
-      width: 360px;             
+      width: 360px;
       margin: 0 auto;
     }
 
@@ -395,6 +397,19 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
 
     .struk-center { text-align: center; }
     .struk-bold { font-weight: 700; }
+
+  .struk-logo-wrap {
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.struk-logo {
+  width: 70px;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: inline-block;
+}
 
     .struk-title {
       font-size: 14px;
@@ -470,7 +485,7 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
         position: fixed;
         left: 0;
         top: 0;
-        width: 80mm;  
+        width: 80mm;
         margin: 0;
         padding: 0;
       }
@@ -629,28 +644,33 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
 
       <div class="modal-body">
         <div id="print-struk">
-          <div id="area-struk">
-            <div class="struk-center struk-title">STRUK PEMESANAN</div>
+         <div id="area-struk">
 
-            <div class="struk-center struk-meta">
-             Outlet: <?= htmlspecialchars($nama_outlet); ?> • Kasir: <?= htmlspecialchars($nama_kasir); ?><br>
-              <span id="struk-tanggal"></span>
-            </div>
+  <div class="struk-logo-wrap">
+    <img src="<?= htmlspecialchars($logo_path); ?>" alt="Logo" class="struk-logo">
+  </div>
 
-            <div class="struk-line"></div>
+  <div class="struk-center struk-title">STRUK PEMESANAN</div>
 
-            <div id="struk-items" class="struk-items"></div>
+  <div class="struk-center struk-meta">
+    Outlet: <?= htmlspecialchars($nama_outlet); ?> • Kasir: <?= htmlspecialchars($nama_kasir); ?><br>
+    <span id="struk-tanggal"></span>
+  </div>
 
-            <div class="struk-line"></div>
+  <div class="struk-line"></div>
 
-            <div class="struk-total-row">
-              <div>TOTAL</div>
-              <div>Rp <span id="struk-total">0</span></div>
-            </div>
+  <div id="struk-items" class="struk-items"></div>
 
-            <div class="struk-line"></div>
-            <div class="struk-footer">Terima kasih</div>
-          </div>
+  <div class="struk-line"></div>
+
+  <div class="struk-total-row">
+    <div>TOTAL</div>
+    <div>Rp <span id="struk-total">0</span></div>
+  </div>
+
+  <div class="struk-line"></div>
+  <div class="struk-footer">Terima kasih</div>
+</div>
         </div>
 
         <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
@@ -663,10 +683,11 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
- 
 
   <script>
     let counter = 0;
+
+    const receiptLogoUrl = <?= json_encode($logo_path); ?>;
 
     function formatRupiah(angka) {
       return new Intl.NumberFormat('id-ID').format(angka);
@@ -882,13 +903,11 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
       const rows = document.querySelectorAll('#tabel-item tbody tr[data-menu-id]');
       if (!rows.length) return false;
 
-      // tanggal/jam
       const now = new Date();
       const tanggal = now.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
       const elTanggal = document.getElementById('struk-tanggal');
       if (elTanggal) elTanggal.textContent = tanggal;
 
-      // items
       const container = document.getElementById('struk-items');
       if (!container) return false;
       container.innerHTML = '';
@@ -911,7 +930,6 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
         container.appendChild(div);
       });
 
-      // total
       const total = parseInt(document.getElementById('total_harga')?.value || 0, 10);
       const elTotal = document.getElementById('struk-total');
       if (elTotal) elTotal.textContent = formatRupiah(total);
@@ -945,161 +963,182 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
         .replaceAll("'", '&#039;');
     }
 
-    function pxToMm(px) {
-      return px * 0.264583; // approx px -> mm
+    function rupiahPlain(n) {
+      return new Intl.NumberFormat('id-ID').format(n);
     }
 
-$(document).on('click', '.tombol-cetak', function () {
-  const data = buildReceiptData();
-  if (!data.items.length) {
-    alert('Belum ada item untuk dicetak.');
-    return;
-  }
+    function buildReceiptData() {
+      const rows = document.querySelectorAll('#tabel-item tbody tr[data-menu-id]');
+      const items = [];
 
-  const { jsPDF } = window.jspdf;
+      rows.forEach((row) => {
+        const nama = row.querySelector('input[name$="[nama_menu]"]')?.value || '-';
+        const harga = parseInt(row.querySelector('input[name$="[harga]"]')?.value || 0, 10);
+        const jumlah = parseInt(row.querySelector('input[name$="[jumlah]"]')?.value || 0, 10);
+        const subtotal = parseInt(row.querySelector('input[name$="[subtotal]"]')?.value || 0, 10);
 
-  // ====== SETTING STRUK (80mm) ======
-  const paperWidth = 80;          // mm
-  const margin = 4;               // mm
-  const lineH = 4.2;              // mm 
-  const usableW = paperWidth - (margin * 2);
+        items.push({ nama, harga, jumlah, subtotal });
+      });
 
-  const baseLines = 10; 
-  const itemLines = data.items.length * 2;
-  const estHeight = (baseLines + itemLines) * lineH + 20; 
-  const paperHeight = Math.max(120, estHeight);
+      const total = parseInt(document.getElementById('total_harga')?.value || 0, 10);
 
-  const doc = new jsPDF({
-    orientation: 'p',
-    unit: 'mm',
-    format: [paperWidth, paperHeight]
+      const now = new Date();
+      const tanggal = now.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+
+      return {
+        outlet: <?= json_encode($nama_outlet); ?>,
+        kasir: <?= json_encode($nama_kasir); ?>,
+        tanggal,
+        items,
+        total
+      };
+    }
+
+   function loadImageAsDataURL(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = function () {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+
+      resolve(canvas.toDataURL('image/jpeg'));
+    };
+    img.onerror = function () {
+      reject(new Error('Logo gagal dimuat'));
+    };
+    img.src = url;
   });
-
-  // Font seperti struk
-  doc.setFont('courier', 'normal');
-  doc.setFontSize(10);
-
-  let y = 6;
-
-  // Helper teks
-  const center = (txt) => doc.text(txt, paperWidth / 2, y, { align: 'center' });
-  const left = (txt) => doc.text(txt, margin, y);
-  const right = (txt) => doc.text(txt, paperWidth - margin, y, { align: 'right' });
-
- const line = () => {
-  doc.setLineWidth(0.2);
-  doc.setLineDashPattern([1, 1], 0); 
-  doc.line(margin, y, paperWidth - margin, y);
-  doc.setLineDashPattern([], 0);    
-};
-
-  // ====== HEADER ======
-  doc.setFont('courier', 'bold');
-  doc.setFontSize(12);
-  center('STRUK PEMESANAN');
-  y += lineH + 1;
-
-  doc.setFont('courier', 'normal');
-  doc.setFontSize(9);
-  center(`Outlet: ${data.outlet}  Kasir: ${data.kasir}`);
-  y += lineH;
-  center(data.tanggal);
-  y += lineH;
-
-  y += 1;
-  line();
-  y += lineH;
-
-  // ====== ITEMS ======
-  doc.setFontSize(10);
-
-  data.items.forEach((it) => {
-    // Nama item (1 baris)
-    doc.setFont('courier', 'bold');
-    const name = String(it.nama);
-
-    // potong nama biar gak lewat (monospace)
-    const maxChars = 32;
-    const nameCut = name.length > maxChars ? name.slice(0, maxChars - 3) + '...' : name;
-
-    left(nameCut);
-    y += lineH;
-
-    // Baris qty x harga (kiri) & subtotal (kanan)
-    doc.setFont('courier', 'normal');
-    const leftText = `${it.jumlah} x Rp ${rupiahPlain(it.harga)}`;
-    const rightText = `Rp ${rupiahPlain(it.subtotal)}`;
-
-    // kalau kiri kepanjangan, potong
-    const leftCut = leftText.length > 24 ? leftText.slice(0, 24) : leftText;
-
-    left(leftCut);
-    right(rightText);
-    y += lineH;
-  });
-
-  y += 1;
-  line();
-  y += lineH;
-
-  // ====== TOTAL ======
-  doc.setFont('courier', 'bold');
-  doc.setFontSize(11);
-  left('TOTAL');
-  right(`Rp ${rupiahPlain(data.total)}`);
-  y += lineH;
-
-  y += 1;
-  line();
-  y += lineH;
-
-  // ====== FOOTER ======
-  doc.setFont('courier', 'normal');
-  doc.setFontSize(9);
-  center('Terima kasih');
-
-  // ====== PRINT ======
-  const blobUrl = doc.output('bloburl');
-  const w = window.open(blobUrl, '_blank');
-  if (w) {
-    w.onload = function () { w.focus(); w.print(); };
-  } else {
-    doc.save('Struk_Pemesanan.pdf');
-  }
-});
-
-
-
-    function rupiahPlain(n) {
-  return new Intl.NumberFormat('id-ID').format(n);
 }
 
-function buildReceiptData() {
-  const rows = document.querySelectorAll('#tabel-item tbody tr[data-menu-id]');
-  const items = [];
+    $(document).on('click', '.tombol-cetak', async function () {
+      const data = buildReceiptData();
+      if (!data.items.length) {
+        alert('Belum ada item untuk dicetak.');
+        return;
+      }
 
-  rows.forEach((row) => {
-    const nama = row.querySelector('input[name$="[nama_menu]"]')?.value || '-';
-    const harga = parseInt(row.querySelector('input[name$="[harga]"]')?.value || 0, 10);
-    const jumlah = parseInt(row.querySelector('input[name$="[jumlah]"]')?.value || 0, 10);
-    const subtotal = parseInt(row.querySelector('input[name$="[subtotal]"]')?.value || 0, 10);
+      const { jsPDF } = window.jspdf;
 
-    items.push({ nama, harga, jumlah, subtotal });
-  });
+      const paperWidth = 80;
+      const margin = 4;
+      const lineH = 4.2;
 
-  const total = parseInt(document.getElementById('total_harga')?.value || 0, 10);
+      const baseLines = 12;
+      const itemLines = data.items.length * 2;
+      const estHeight = (baseLines + itemLines) * lineH + 30;
+      const paperHeight = Math.max(120, estHeight);
 
-  const now = new Date();
-  const tanggal = now.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+      const doc = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: [paperWidth, paperHeight]
+      });
 
- return {
-  outlet: <?= json_encode($nama_outlet); ?>,
-  kasir: <?= json_encode($nama_kasir); ?>,
-  tanggal,
-  items,
-  total
-};
+      doc.setFont('courier', 'normal');
+      doc.setFontSize(10);
+
+      let y = 6;
+
+      const center = (txt) => doc.text(txt, paperWidth / 2, y, { align: 'center' });
+      const left = (txt) => doc.text(txt, margin, y);
+      const right = (txt) => doc.text(txt, paperWidth - margin, y, { align: 'right' });
+
+      const line = () => {
+        doc.setLineWidth(0.2);
+        doc.setLineDashPattern([1, 1], 0);
+        doc.line(margin, y, paperWidth - margin, y);
+        doc.setLineDashPattern([], 0);
+      };
+
+      // ===== LOGO =====
+     try {
+  const logoData = await loadImageAsDataURL(receiptLogoUrl);
+  const logoWidth = 18;
+  const logoHeight = 18;
+  const logoX = (paperWidth - logoWidth) / 2;
+
+  doc.addImage(logoData, 'JPEG', logoX, y, logoWidth, logoHeight);
+  y += logoHeight + 3;
+} catch (err) {
+  console.warn(err);
 }
+
+      // ===== HEADER =====
+      doc.setFont('courier', 'bold');
+      doc.setFontSize(12);
+      center('STRUK PEMESANAN');
+      y += lineH + 1;
+
+      doc.setFont('courier', 'normal');
+      doc.setFontSize(9);
+      center(`Outlet: ${data.outlet}`);
+      y += lineH;
+      center(`Kasir: ${data.kasir}`);
+      y += lineH;
+      center(data.tanggal);
+      y += lineH;
+
+      y += 1;
+      line();
+      y += lineH;
+
+      // ===== ITEMS =====
+      doc.setFontSize(10);
+
+      data.items.forEach((it) => {
+        doc.setFont('courier', 'bold');
+        const name = String(it.nama);
+        const maxChars = 32;
+        const nameCut = name.length > maxChars ? name.slice(0, maxChars - 3) + '...' : name;
+
+        left(nameCut);
+        y += lineH;
+
+        doc.setFont('courier', 'normal');
+        const leftText = `${it.jumlah} x Rp ${rupiahPlain(it.harga)}`;
+        const rightText = `Rp ${rupiahPlain(it.subtotal)}`;
+        const leftCut = leftText.length > 24 ? leftText.slice(0, 24) : leftText;
+
+        left(leftCut);
+        right(rightText);
+        y += lineH;
+      });
+
+      y += 1;
+      line();
+      y += lineH;
+
+      // ===== TOTAL =====
+      doc.setFont('courier', 'bold');
+      doc.setFontSize(11);
+      left('TOTAL');
+      right(`Rp ${rupiahPlain(data.total)}`);
+      y += lineH;
+
+      y += 1;
+      line();
+      y += lineH;
+
+      // ===== FOOTER =====
+      doc.setFont('courier', 'normal');
+      doc.setFontSize(9);
+      center('Terima kasih');
+
+      const blobUrl = doc.output('bloburl');
+      const w = window.open(blobUrl, '_blank');
+      if (w) {
+        w.onload = function () {
+          w.focus();
+          w.print();
+        };
+      } else {
+        doc.save('Struk_Pemesanan.pdf');
+      }
+    });
   </script>
 </body>
 </html>
